@@ -1,0 +1,185 @@
+[
+    {
+        "name": "IBM Watson for Oncology",
+        "disease": "Cancer",
+        "modality": [
+            "Genomics",
+            "EHR"
+        ],
+        "task": [
+            "Diagnosis",
+            "Treatment"
+        ],
+        "link": "https://www.ibm.com/products/watson-for-oncology"
+    },
+    {
+        "name": "Cancer Imaging Archive (TCIA)",
+        "disease": "Cancer",
+        "modality": [
+            "Image Analysis"
+        ],
+        "task": [
+            "Diagnosis",
+            "Prognosis"
+        ],
+        "link": "https://www.cancerimagingarchive.net/"
+    },
+    {
+        "name": "DeepHealth (AIDPATH)",
+        "disease": "Cancer",
+        "modality": [
+            "Image Analysis"
+        ],
+        "task": [
+            "Diagnosis",
+            "Treatment"
+        ],
+        "link": "https://deephealth-project.eu/"
+    },
+    {
+        "name": "OncoKB",
+        "disease": "Cancer",
+        "modality": [
+            "Genomics"
+        ],
+        "task": [
+            "Diagnosis",
+            "Treatment"
+        ],
+        "link": "https://www.oncokb.org/"
+    },
+    {
+        "name": "CardioRisk Calculator",
+        "disease": "Heart Disease",
+        "modality": [
+            "EHR"
+        ],
+        "task": [
+            "Prognosis"
+        ],
+        "link": "https://www.mdcalc.com/calc/3252/cardiovascular-risk"
+    },
+    {
+        "name": "Framingham Heart Study",
+        "disease": "Heart Disease",
+        "modality": [
+            "EHR"
+        ],
+        "task": [
+            "Prognosis"
+        ],
+        "link": "https://framinghamheartstudy.org/"
+    },
+    {
+        "name": "AI for Diabetes",
+        "disease": "Diabetes",
+        "modality": [
+            "EHR",
+            "Genomics"
+        ],
+        "task": [
+            "Diagnosis",
+            "Prognosis"
+        ],
+        "link": "https://www.aihealthcare.com/diabetes"
+    },
+    {
+        "name": "Glycemic Risk Predictor",
+        "disease": "Diabetes",
+        "modality": [
+            "EHR"
+        ],
+        "task": [
+            "Prognosis"
+        ],
+        "link": "https://qxmd.com/calculate/calculator_275/glycemic-risk-score"
+    },
+    {
+        "name": "Eko AI (Heart Disease)",
+        "disease": "Heart Disease",
+        "modality": [
+            "Image Analysis"
+        ],
+        "task": [
+            "Diagnosis",
+            "Prognosis"
+        ],
+        "link": "https://ekohealth.com/"
+    },
+    {
+        "name": "My Cancer Genome",
+        "disease": "Cancer",
+        "modality": [
+            "Genomics"
+        ],
+        "task": [
+            "Treatment Planning"
+        ],
+        "link": "https://www.mycancergenome.org/"
+    },
+    {
+        "name": "Stanford AIMI Center",
+        "disease": [
+            "Cancer",
+            "Heart Disease"
+        ],
+        "modality": [
+            "Image Analysis",
+            "EHR"
+        ],
+        "task": [
+            "Diagnosis",
+            "Prognosis"
+        ],
+        "link": "https://aimi.stanford.edu/"
+    },
+    {
+        "name": "Predictive Analytics (Mayo)",
+        "disease": "Various",
+        "modality": [
+            "EHR"
+        ],
+        "task": [
+            "Prognosis"
+        ],
+        "link": "https://news.mayocliniclabs.com/predictive-diagnostics/"
+    },
+    {
+        "name": "Cardio AI (CardioNet)",
+        "disease": "Heart Disease",
+        "modality": [
+            "Image Analysis",
+            "EHR"
+        ],
+        "task": [
+            "Diagnosis",
+            "Treatment"
+        ],
+        "link": "https://www.cardionet.com/"
+    },
+    {
+        "name": "Diabetes Predictive Model",
+        "disease": "Diabetes",
+        "modality": [
+            "EHR"
+        ],
+        "task": [
+            "Prognosis",
+            "Treatment"
+        ],
+        "link": "https://care.diabetesjournals.org/"
+    },
+    {
+        "name": "Prognos AI",
+        "disease": "Various",
+        "modality": [
+            "EHR",
+            "Genomics"
+        ],
+        "task": [
+            "Diagnosis",
+            "Prognosis"
+        ],
+        "link": "https://prognoshealth.com/"
+    }
+]

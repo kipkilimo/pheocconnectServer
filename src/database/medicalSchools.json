@@ -1,0 +1,124 @@
+{
+    "universities": [
+        {
+            "name": "University of Nairobi Medical School",
+            "location": "Nairobi, Kenya",
+            "address": "Kenyatta National Hospital Campus, P.O. Box 19676-00202, Nairobi, Kenya",
+            "website": "https://med-school.uonbi.ac.ke/",
+            "contacts": {
+                "phone": "+254-20-491-4905",
+                "email": "principal-chs@uonbi.ac.ke"
+            }
+        },
+        {
+            "name": "Moi University Medical School",
+            "location": "Eldoret, Kenya",
+            "address": "P.O. Box 4606-30100, Eldoret, Kenya",
+            "website": "https://som.mu.ac.ke/",
+            "contacts": {
+                "phone": "+254-53-43133",
+                "email": "som@mu.ac.ke"
+            }
+        },
+        {
+            "name": "Kenyatta University Medical School",
+            "location": "Nairobi, Kenya",
+            "address": "P.O. Box 43844-00100, Nairobi, Kenya",
+            "website": "http://www.ku.ac.ke/schools/medicine/",
+            "contacts": {
+                "phone": "+254-20-870-3000",
+                "email": "info@ku.ac.ke"
+            }
+        },
+        {
+            "name": "Egerton University Medical School",
+            "location": "Njoro, Kenya",
+            "address": "P.O. Box 536-20115, Egerton, Njoro, Kenya",
+            "website": "https://www.egerton.ac.ke/school-of-medicine",
+            "contacts": {
+                "phone": "+254-51-221-7809",
+                "email": "registrar@egerton.ac.ke"
+            }
+        },
+        {
+            "name": "Kenya Methodist University Medical School",
+            "location": "Meru, Kenya",
+            "address": "P.O. Box 267-60200, Meru, Kenya",
+            "website": "https://www.kemu.ac.ke/school-of-medicine",
+            "contacts": {
+                "phone": "+254-64-30301",
+                "email": "info@kemu.ac.ke"
+            }
+        },
+        {
+            "name": "Aga Khan University Medical School",
+            "location": "Nairobi, Kenya",
+            "address": "3rd Parklands Avenue, P.O. Box 30270-00100, Nairobi, Kenya",
+            "website": "https://www.aku.edu/medicine/eastafrica/Pages/welcome.aspx",
+            "contacts": {
+                "phone": "+254-20-366-2106",
+                "email": "aku@aku.edu"
+            }
+        },
+        {
+            "name": "JKUAT Medical School",
+            "location": "Juja, Kenya",
+            "address": "P.O. Box 62000-00200, Nairobi, Kenya",
+            "website": "https://www.jkuat.ac.ke/schools/medicine/",
+            "contacts": {
+                "phone": "+254-67-5870001",
+                "email": "registrar@jkuat.ac.ke"
+            }
+        },
+        {
+            "name": "Mount Kenya University Medical School",
+            "location": "Thika, Kenya",
+            "address": "P.O. Box 342-01000, Thika, Kenya",
+            "website": "https://www.mku.ac.ke/school-of-medicine",
+            "contacts": {
+                "phone": "+254-67-2820000",
+                "email": "info@mku.ac.ke"
+            }
+        },
+        {
+            "name": "Uzima University School of Medicine",
+            "location": "Kisumu, Kenya",
+            "address": "P.O. Box 2502-40100, Kisumu, Kenya",
+            "website": "https://www.uzimauniversity.ac.ke/school-of-medicine",
+            "contacts": {
+                "phone": "+254-57-202-9541",
+                "email": "info@uzimauniversity.ac.ke"
+            }
+        },
+        {
+            "name": "Maseno University School of Medicine",
+            "location": "Maseno, Kenya",
+            "address": "Private Bag, Maseno, Kenya",
+            "website": "https://www.maseno.ac.ke/school-of-medicine",
+            "contacts": {
+                "phone": "+254-57-351622",
+                "email": "registrar@maseno.ac.ke"
+            }
+        },
+        {
+            "name": "Masinde Muliro University of Science and Technology School of Medicine",
+            "location": "Kakamega, Kenya",
+            "address": "P.O. Box 190-50100, Kakamega, Kenya",
+            "website": "https://www.mmust.ac.ke/school-of-medicine",
+            "contacts": {
+                "phone": "+254-56-31375",
+                "email": "info@mmust.ac.ke"
+            }
+        },
+        {
+            "name": "Kisii University School of Medicine",
+            "location": "Kisii, Kenya",
+            "address": "P.O. Box 408-40200, Kisii, Kenya",
+            "website": "https://www.kisiiuniversity.ac.ke/school-of-medicine",
+            "contacts": {
+                "phone": "+254-58-30826",
+                "email": "info@kisiiuniversity.ac.ke"
+            }
+        }
+    ]
+}

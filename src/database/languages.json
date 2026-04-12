@@ -1,0 +1,186 @@
+{
+    "Africa": {
+        "regions": {
+            "North Africa": [
+                {
+                    "number": 1,
+                    "name": "Arabic",
+                    "speakers_million": 100,
+                    "trends": "Stable with growth in modern usage and digital communication."
+                },
+                {
+                    "number": 2,
+                    "name": "Berber (Tamazight)",
+                    "speakers_million": 30,
+                    "trends": "Increasing due to cultural revitalization."
+                },
+                {
+                    "number": 3,
+                    "name": "Hassaniya Arabic",
+                    "speakers_million": 3,
+                    "trends": "Stable in Mauritania and parts of Western Sahara."
+                }
+            ],
+            "West Africa": [
+                {
+                    "number": 1,
+                    "name": "Hausa",
+                    "speakers_million": 70,
+                    "trends": "Growing as a lingua franca in the region."
+                },
+                {
+                    "number": 2,
+                    "name": "Yoruba",
+                    "speakers_million": 45,
+                    "trends": "Cultural and educational resurgence."
+                },
+                {
+                    "number": 3,
+                    "name": "Igbo",
+                    "speakers_million": 44,
+                    "trends": "Steady, with increased global diaspora usage."
+                },
+                {
+                    "number": 4,
+                    "name": "Fula (Fulani, Fulfulde)",
+                    "speakers_million": 40,
+                    "trends": "Stable, used widely among nomadic communities."
+                },
+                {
+                    "number": 5,
+                    "name": "Akan",
+                    "speakers_million": 30,
+                    "trends": "Increasing due to educational and cultural efforts."
+                },
+                {
+                    "number": 6,
+                    "name": "Wolof",
+                    "speakers_million": 10,
+                    "trends": "Rising, especially in Senegal's urban areas."
+                }
+            ],
+            "East Africa": [
+                {
+                    "number": 1,
+                    "name": "Swahili",
+                    "speakers_million": 80,
+                    "trends": "Rapid growth due to official language status in multiple countries."
+                },
+                {
+                    "number": 2,
+                    "name": "Amharic",
+                    "speakers_million": 35,
+                    "trends": "Stable, used in government and media."
+                },
+                {
+                    "number": 3,
+                    "name": "Oromo",
+                    "speakers_million": 35,
+                    "trends": "Increasing visibility and cultural promotion."
+                },
+                {
+                    "number": 4,
+                    "name": "Somali",
+                    "speakers_million": 20,
+                    "trends": "Stable, with significant diaspora influence."
+                },
+                {
+                    "number": 5,
+                    "name": "Tigrinya",
+                    "speakers_million": 7,
+                    "trends": "Stable with diaspora growth."
+                },
+                {
+                    "number": 6,
+                    "name": "Kisii",
+                    "speakers_million": 5,
+                    "trends": "Moderate growth in local contexts."
+                }
+            ],
+            "Central Africa": [
+                {
+                    "number": 1,
+                    "name": "Lingala",
+                    "speakers_million": 15,
+                    "trends": "Increasing in urban areas and media."
+                },
+                {
+                    "number": 2,
+                    "name": "Kongo",
+                    "speakers_million": 7,
+                    "trends": "Stable with cultural significance."
+                },
+                {
+                    "number": 3,
+                    "name": "Sango",
+                    "speakers_million": 5,
+                    "trends": "Stable as a lingua franca in the Central African Republic."
+                }
+            ],
+            "Southern Africa": [
+                {
+                    "number": 1,
+                    "name": "Zulu",
+                    "speakers_million": 12,
+                    "trends": "Increasing due to cultural pride and media."
+                },
+                {
+                    "number": 2,
+                    "name": "Xhosa",
+                    "speakers_million": 10,
+                    "trends": "Stable with slight growth in urban areas."
+                },
+                {
+                    "number": 3,
+                    "name": "Shona",
+                    "speakers_million": 15,
+                    "trends": "Stable, predominant in Zimbabwe."
+                },
+                {
+                    "number": 4,
+                    "name": "Sesotho",
+                    "speakers_million": 7,
+                    "trends": "Stable with regional significance."
+                }
+            ]
+        },
+        "foreign_languages": [
+            {
+                "number": 1,
+                "name": "French",
+                "speakers_million": 120,
+                "trends": "Stable with growing importance in education and government."
+            },
+            {
+                "number": 2,
+                "name": "English",
+                "speakers_million": 100,
+                "trends": "Increasing as the primary language of business and education."
+            },
+            {
+                "number": 3,
+                "name": "Portuguese",
+                "speakers_million": 50,
+                "trends": "Growing due to regional influence in Lusophone Africa."
+            },
+            {
+                "number": 4,
+                "name": "Spanish",
+                "speakers_million": 5,
+                "trends": "Limited growth, mainly in Equatorial Guinea."
+            },
+            {
+                "number": 5,
+                "name": "German",
+                "speakers_million": 0.25,
+                "trends": "Limited growth, academic interest."
+            },
+            {
+                "number": 6,
+                "name": "Italian",
+                "speakers_million": 1,
+                "trends": "Stable with historical roots in parts of North Africa."
+            }
+        ]
+    }
+}

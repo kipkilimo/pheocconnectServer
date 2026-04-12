@@ -1,0 +1,425 @@
+{
+    "STEM_Fields": {
+        "Science": {
+            "Subfields": {
+                "Physics": {
+                    "isHighPaying": true,
+                    "Future_Evolution_Score": 9,
+                    "Topics": [
+                        "Classical Mechanics",
+                        "Quantum Mechanics",
+                        "Thermodynamics",
+                        "Electromagnetism",
+                        "Relativity"
+                    ],
+                    "Career_Paths": [
+                        "Physicist",
+                        "Astrophysicist",
+                        "Nuclear Physicist",
+                        "Materials Scientist",
+                        "Engineer"
+                    ],
+                    "Famous_People": [
+                        "Albert Einstein",
+                        "Isaac Newton",
+                        "Marie Curie",
+                        "Richard Feynman"
+                    ],
+                    "Image_URL": "https://example.com/physics.jpg",
+                    "Interesting_Fact": "Physics seeks to explain the fundamental nature of the universe, from the smallest particles to the largest galaxies.",
+                    "Narration": "Physics is the branch of science that explores the fundamental forces and laws governing the universe. It's about understanding how the world works, from the smallest particles to the vastness of space. Key topics in physics include Classical Mechanics, the study of motion and forces; Quantum Mechanics, which explores the behavior of particles at the atomic level; Thermodynamics, which deals with heat and energy transfer; Electromagnetism, the study of electric and magnetic fields; and Relativity, which examines the relationship between space and time. If you're fascinated by the universe and how it works, physics offers careers such as becoming a physicist, who studies the fundamental principles of nature; an astrophysicist, who explores the cosmos; a nuclear physicist, who focuses on atomic particles; a materials scientist, who develops new materials; or an engineer, who applies physical principles to solve practical problems. Famous physicists include Albert Einstein, who developed the theory of relativity; Isaac Newton, who formulated the laws of motion and gravity; Marie Curie, who pioneered research on radioactivity; and Richard Feynman, known for his work in quantum mechanics. Physics is essential for understanding the universe, making it one of the most fundamental and exciting fields of science."
+                },
+                "Chemistry": {
+                    "isHighPaying": true,
+                    "Future_Evolution_Score": 8,
+                    "Topics": [
+                        "Organic Chemistry",
+                        "Inorganic Chemistry",
+                        "Physical Chemistry",
+                        "Analytical Chemistry",
+                        "Biochemistry"
+                    ],
+                    "Career_Paths": [
+                        "Chemist",
+                        "Pharmacist",
+                        "Chemical Engineer",
+                        "Forensic Scientist",
+                        "Biochemist"
+                    ],
+                    "Famous_People": [
+                        "Marie Curie",
+                        "Dmitri Mendeleev",
+                        "Linus Pauling",
+                        "Rosalind Franklin"
+                    ],
+                    "Image_URL": "https://example.com/chemistry.jpg",
+                    "Interesting_Fact": "Chemistry is often called the central science because it connects other sciences, such as physics and biology, through the study of matter.",
+                    "Narration": "Chemistry is the study of matter and the changes it undergoes. It's about understanding the composition, structure, properties, and reactions of substances. Key areas of chemistry include Organic Chemistry, which focuses on carbon-containing compounds; Inorganic Chemistry, which deals with minerals and metals; Physical Chemistry, which combines chemistry with physics to study energy and matter; Analytical Chemistry, which involves analyzing substances to determine their composition; and Biochemistry, which explores the chemical processes within living organisms. If you're interested in exploring the building blocks of the universe, chemistry offers careers like becoming a chemist, who studies the properties of substances; a pharmacist, who prepares and dispenses medicines; a chemical engineer, who develops processes for large-scale chemical production; a forensic scientist, who analyzes evidence for criminal investigations; or a biochemist, who studies the chemical processes of life. Famous chemists include Marie Curie, who discovered radioactivity; Dmitri Mendeleev, who created the periodic table; Linus Pauling, known for his work in chemical bonding; and Rosalind Franklin, whose research was crucial to understanding DNA. Chemistry is often called the central science because it connects other sciences, making it a key field in understanding the world."
+                },
+                "Biology": {
+                    "isHighPaying": true,
+                    "Future_Evolution_Score": 9,
+                    "Topics": [
+                        "Genetics",
+                        "Evolution",
+                        "Ecology",
+                        "Cell Biology",
+                        "Molecular Biology"
+                    ],
+                    "Career_Paths": [
+                        "Biologist",
+                        "Geneticist",
+                        "Ecologist",
+                        "Microbiologist",
+                        "Biomedical Scientist"
+                    ],
+                    "Famous_People": [
+                        "Charles Darwin",
+                        "Gregor Mendel",
+                        "Rosalind Franklin",
+                        "James Watson"
+                    ],
+                    "Image_URL": "https://example.com/biology.jpg",
+                    "Interesting_Fact": "Biology is the study of life, from the smallest microorganisms to the largest ecosystems, helping us understand the living world.",
+                    "Narration": "Biology is the science of life and living organisms. It explores how organisms grow, develop, and interact with their environment. Key areas of biology include Genetics, which studies heredity and variation in organisms; Evolution, which examines how species change over time; Ecology, which looks at the relationships between organisms and their environment; Cell Biology, which focuses on the structure and function of cells; and Molecular Biology, which investigates the molecular mechanisms of biological processes. If you're passionate about understanding life, biology offers careers such as becoming a biologist, who studies living organisms; a geneticist, who explores genetic codes and inheritance; an ecologist, who works to preserve ecosystems; a microbiologist, who studies microorganisms; or a biomedical scientist, who conducts research to improve health. Famous biologists include Charles Darwin, who developed the theory of evolution; Gregor Mendel, the father of genetics; Rosalind Franklin, who contributed to the discovery of DNA; and James Watson, who co-discovered the structure of DNA. Biology helps us understand the living world, making it a crucial field in science."
+                },
+                "Earth Sciences": {
+                    "isHighPaying": true,
+                    "Future_Evolution_Score": 7,
+                    "Topics": [
+                        "Geology",
+                        "Meteorology",
+                        "Oceanography",
+                        "Environmental Science",
+                        "Paleontology"
+                    ],
+                    "Career_Paths": [
+                        "Geologist",
+                        "Meteorologist",
+                        "Oceanographer",
+                        "Environmental Scientist",
+                        "Paleontologist"
+                    ],
+                    "Famous_People": [
+                        "Alfred Wegener",
+                        "Marie Tharp",
+                        "Charles Lyell",
+                        "Eugene Shoemaker"
+                    ],
+                    "Image_URL": "https://example.com/earth_sciences.jpg",
+                    "Interesting_Fact": "Earth sciences study the planet's physical characteristics, from its deep core to the highest mountain peaks, helping us understand Earth's history and future.",
+                    "Narration": "Earth Sciences encompass the study of the Earth's structure, properties, processes, and history. It includes disciplines that focus on different aspects of our planet, from its deep interior to the atmosphere and oceans. Key topics in Earth sciences include Geology, which studies rocks and the Earth's structure; Meteorology, which focuses on weather and climate; Oceanography, the study of oceans and marine life; Environmental Science, which addresses environmental Consultations and conservation; and Paleontology, the study of fossils and ancient life. If you're interested in understanding the Earth and its processes, you might pursue a career as a geologist, who studies the Earth’s materials and processes; a meteorologist, who forecasts weather; an oceanographer, who explores the oceans; an environmental scientist, who works on solving environmental problems; or a paleontologist, who investigates the history of life on Earth. Famous earth scientists include Alfred Wegener, who proposed the theory of continental drift; Marie Tharp, who created the first maps of the ocean floor; Charles Lyell, who popularized the concept of geological time; and Eugene Shoemaker, a pioneer in planetary geology. Earth sciences help us understand our planet's past, present, and future, making it a vital field of study."
+                }
+            }
+        },
+        "Technology": {
+            "Subfields": {
+                "Information Technology": {
+                    "isHighPaying": true,
+                    "Future_Evolution_Score": 10,
+                    "Topics": [
+                        "Computer Networks",
+                        "Cybersecurity",
+                        "Database Management",
+                        "Cloud Computing",
+                        "Information Systems"
+                    ],
+                    "Career_Paths": [
+                        "IT Specialist",
+                        "Network Administrator",
+                        "Cybersecurity Analyst",
+                        "Database Administrator",
+                        "Cloud Architect"
+                    ],
+                    "Famous_People": [
+                        "Tim Berners-Lee",
+                        "Bill Gates",
+                        "Steve Jobs",
+                        "Ada Lovelace"
+                    ],
+                    "Image_URL": "https://example.com/information_technology.jpg",
+                    "Interesting_Fact": "Information Technology is the backbone of modern communication and data management, playing a critical role in virtually all industries.",
+                    "Narration": "Information Technology (IT) is all about managing and processing information using computers and networks. It involves the design, implementation, and maintenance of computer systems and software that store, retrieve, and send information. Key areas in IT include Computer Networks, which connect computers to share resources; Cybersecurity, which protects systems from digital attacks; Database Management, which involves organizing and managing data; Cloud Computing, which provides services over the internet; and Information Systems, which integrate technology with business processes. If you're interested in computers and data, IT offers careers like becoming an IT specialist, who supports and maintains computer systems; a network administrator, who manages network infrastructure; a cybersecurity analyst, who protects systems from cyber threats; a database administrator, who manages data storage systems; or a cloud architect, who designs and manages cloud computing solutions. Famous figures in IT include Tim Berners-Lee, who invented the World Wide Web; Bill Gates, co-founder of Microsoft; Steve Jobs, co-founder of Apple; and Ada Lovelace, who is considered the first computer programmer. Information Technology is crucial for the functioning of modern society, making it a highly dynamic and essential field."
+                },
+                "Software Development": {
+                    "isHighPaying": true,
+                    "Future_Evolution_Score": 9,
+                    "Topics": [
+                        "Programming Languages",
+                        "Software Engineering",
+                        "Web Development",
+                        "Mobile App Development",
+                        "Artificial Intelligence"
+                    ],
+                    "Career_Paths": [
+                        "Software Developer",
+                        "Web Developer",
+                        "Mobile App Developer",
+                        "AI Engineer",
+                        "Software Architect"
+                    ],
+                    "Famous_People": [
+                        "Linus Torvalds",
+                        "Margaret Hamilton",
+                        "James Gosling",
+                        "Guido van Rossum"
+                    ],
+                    "Image_URL": "https://example.com/software_development.jpg",
+                    "Interesting_Fact": "Software development drives innovation in nearly every industry, from healthcare to entertainment, shaping the way we live and work.",
+                    "Narration": "Software Development is the process of designing, coding, testing, and maintaining software applications. It’s about turning ideas into functional programs that can run on computers, mobile devices, or the web. Important areas in software development include Programming Languages, which are the tools developers use to write code; Software Engineering, which involves the systematic development of software; Web Development, which focuses on building websites and web applications; Mobile App Development, which creates software for smartphones and tablets; and Artificial Intelligence (AI), which enables machines to perform tasks that typically require human intelligence. If you enjoy solving problems and building things, software development offers careers such as becoming a software developer, who creates software programs; a web developer, who designs and builds websites; a mobile app developer, who creates apps for smartphones; an AI engineer, who develops intelligent systems; or a software architect, who designs the overall structure of software systems. Famous figures in software development include Linus Torvalds, who created the Linux operating system; Margaret Hamilton, who led the development of the software for the Apollo moon missions; James Gosling, who invented the Java programming language; and Guido van Rossum, who created Python. Software development is at the heart of technological innovation, making it one of the most impactful fields in the modern world."
+                },
+                "Robotics": {
+                    "isHighPaying": true,
+                    "Future_Evolution_Score": 10,
+                    "Topics": [
+                        "Automation",
+                        "Artificial Intelligence",
+                        "Mechanical Design",
+                        "Control Systems",
+                        "Human-Robot Interaction"
+                    ],
+                    "Career_Paths": [
+                        "Robotics Engineer",
+                        "Automation Engineer",
+                        "AI Specialist",
+                        "Mechanical Engineer",
+                        "Control Systems Engineer"
+                    ],
+                    "Famous_People": [
+                        "Isaac Asimov",
+                        "Joseph Engelberger",
+                        "Cynthia Breazeal",
+                        "Rodney Brooks"
+                    ],
+                    "Image_URL": "https://example.com/robotics.jpg",
+                    "Interesting_Fact": "Robotics combines engineering, AI, and mechanics to create machines that can assist or even replace humans in various tasks.",
+                    "Narration": "Robotics is the branch of technology that deals with the design, construction, operation, and application of robots. It’s about creating machines that can perform tasks autonomously or semi-autonomously. Key topics in robotics include Automation, which involves using robots to perform repetitive tasks; Artificial Intelligence (AI), which enables robots to make decisions and learn from their environment; Mechanical Design, which focuses on the physical construction of robots; Control Systems, which govern how robots move and interact with their environment; and Human-Robot Interaction, which explores how humans and robots can work together. If you're fascinated by the idea of creating intelligent machines, robotics offers careers like becoming a robotics engineer, who designs and builds robots; an automation engineer, who develops systems that automate industrial processes; an AI specialist, who integrates AI into robotic systems; a mechanical engineer, who focuses on the robot's design; or a control systems engineer, who creates the systems that control robots' movements. Famous figures in robotics include Isaac Asimov, who wrote influential science fiction about robots; Joseph Engelberger, known as the 'father of robotics'; Cynthia Breazeal, who pioneered social robots; and Rodney Brooks, who developed behavior-based robotics. Robotics is at the cutting edge of technology, promising to transform industries and everyday life."
+                },
+                "Cybersecurity": {
+                    "isHighPaying": true,
+                    "Future_Evolution_Score": 9,
+                    "Topics": [
+                        "Network Security",
+                        "Cryptography",
+                        "Penetration Testing",
+                        "Information Assurance",
+                        "Incident Response"
+                    ],
+                    "Career_Paths": [
+                        "Cybersecurity Analyst",
+                        "Penetration Tester",
+                        "Security Consultant",
+                        "Cryptographer",
+                        "Incident Responder"
+                    ],
+                    "Famous_People": [
+                        "Kevin Mitnick",
+                        "Bruce Schneier",
+                        "Whitfield Diffie",
+                        "Clifford Stoll"
+                    ],
+                    "Image_URL": "https://example.com/cybersecurity.jpg",
+                    "Interesting_Fact": "Cybersecurity is essential in today's digital world, protecting sensitive information and critical infrastructure from cyber threats.",
+                    "Narration": "Cybersecurity is the practice of protecting systems, networks, and data from digital attacks. It's about safeguarding information and ensuring that systems remain secure and resilient against threats. Key areas in cybersecurity include Network Security, which focuses on protecting computer networks from intrusions; Cryptography, the science of encrypting information to protect its confidentiality; Penetration Testing, which involves testing systems for vulnerabilities by simulating attacks; Information Assurance, which ensures that data is accurate and available when needed; and Incident Response, which involves reacting to and recovering from security breaches. If you're interested in defending against cyber threats, cybersecurity offers careers such as becoming a cybersecurity analyst, who monitors and protects networks; a penetration tester, who identifies vulnerabilities in systems; a security consultant, who advises organizations on security practices; a cryptographer, who develops encryption algorithms; or an incident responder, who manages the response to security incidents. Famous figures in cybersecurity include Kevin Mitnick, a former hacker turned security consultant; Bruce Schneier, a leading security technologist; Whitfield Diffie, co-inventor of public-key cryptography; and Clifford Stoll, who uncovered a major cyber espionage ring. Cybersecurity is critical in protecting our digital world, making it one of the most important fields in technology."
+                }
+            }
+        },
+        "Engineering": {
+            "Subfields": {
+                "Civil Engineering": {
+                    "isHighPaying": true,
+                    "Future_Evolution_Score": 8,
+                    "Topics": [
+                        "Structural Engineering",
+                        "Transportation Engineering",
+                        "Geotechnical Engineering",
+                        "Water Resources Engineering",
+                        "Environmental Engineering"
+                    ],
+                    "Career_Paths": [
+                        "Civil Engineer",
+                        "Structural Engineer",
+                        "Transportation Engineer",
+                        "Environmental Engineer",
+                        "Construction Manager"
+                    ],
+                    "Famous_People": [
+                        "Gustave Eiffel",
+                        "Isambard Kingdom Brunel",
+                        "Emily Warren Roebling",
+                        "John Smeaton"
+                    ],
+                    "Image_URL": "https://example.com/civil_engineering.jpg",
+                    "Interesting_Fact": "Civil engineering is one of the oldest engineering disciplines, responsible for designing and building infrastructure like roads, bridges, and buildings.",
+                    "Narration": "Civil Engineering is the branch of engineering that deals with the design, construction, and maintenance of the physical and naturally built environment. This includes infrastructure like roads, bridges, buildings, and water systems. Key areas in civil engineering include Structural Engineering, which focuses on the design and analysis of structures that support or resist loads; Transportation Engineering, which deals with the planning, design, and operation of transportation systems; Geotechnical Engineering, which involves studying soil and rock to support foundations and structures; Water Resources Engineering, which is concerned with the management of water supply and flood control systems; and Environmental Engineering, which focuses on protecting the environment by managing pollution and waste. If you're interested in building and designing the infrastructure of the future, civil engineering offers careers like becoming a civil engineer, who designs and supervises construction projects; a structural engineer, who ensures buildings and bridges are safe; a transportation engineer, who plans and optimizes transportation networks; an environmental engineer, who works on sustainable solutions to environmental challenges; or a construction manager, who oversees building projects from start to finish. Famous civil engineers include Gustave Eiffel, who designed the Eiffel Tower; Isambard Kingdom Brunel, known for his revolutionary designs in bridges and railways; Emily Warren Roebling, who played a key role in completing the Brooklyn Bridge; and John Smeaton, the 'father of civil engineering.' Civil engineering is essential for developing the infrastructure that supports modern life, making it a cornerstone of engineering."
+                },
+                "Mechanical Engineering": {
+                    "isHighPaying": true,
+                    "Future_Evolution_Score": 9,
+                    "Topics": [
+                        "Thermodynamics",
+                        "Fluid Mechanics",
+                        "Materials Science",
+                        "Robotics",
+                        "Manufacturing"
+                    ],
+                    "Career_Paths": [
+                        "Mechanical Engineer",
+                        "Aerospace Engineer",
+                        "Automotive Engineer",
+                        "Manufacturing Engineer",
+                        "Robotics Engineer"
+                    ],
+                    "Famous_People": [
+                        "James Watt",
+                        "Nikola Tesla",
+                        "Henry Ford",
+                        "Elon Musk"
+                    ],
+                    "Image_URL": "https://example.com/mechanical_engineering.jpg",
+                    "Interesting_Fact": "Mechanical engineering is one of the broadest engineering fields, involving the design and manufacturing of everything from tiny parts to large machines and vehicles.",
+                    "Narration": "Mechanical Engineering is the branch of engineering that involves the design, analysis, and manufacturing of mechanical systems. It’s about creating machines and devices that perform tasks, from the smallest components to large industrial machines. Key areas in mechanical engineering include Thermodynamics, which studies the relationship between heat and other forms of energy; Fluid Mechanics, which examines the behavior of fluids and gases in motion; Materials Science, which explores the properties of materials and how they can be used in manufacturing; Robotics, which involves designing and building robots; and Manufacturing, which focuses on the production of goods using various techniques. If you're interested in designing and building things that move, mechanical engineering offers careers such as becoming a mechanical engineer, who designs mechanical systems; an aerospace engineer, who works on aircraft and spacecraft; an automotive engineer, who designs vehicles; a manufacturing engineer, who optimizes production processes; or a robotics engineer, who creates robots and automation systems. Famous mechanical engineers include James Watt, who improved the steam engine; Nikola Tesla, who contributed to the development of alternating current; Henry Ford, who revolutionized manufacturing with the assembly line; and Elon Musk, known for his work in electric vehicles and space exploration. Mechanical engineering is one of the most versatile fields, impacting various industries and making it a vital part of modern engineering."
+                },
+                "Electrical Engineering": {
+                    "isHighPaying": true,
+                    "Future_Evolution_Score": 9,
+                    "Topics": [
+                        "Circuit Design",
+                        "Electromagnetism",
+                        "Power Systems",
+                        "Control Systems",
+                        "Telecommunications"
+                    ],
+                    "Career_Paths": [
+                        "Electrical Engineer",
+                        "Electronics Engineer",
+                        "Power Engineer",
+                        "Control Systems Engineer",
+                        "Telecommunications Engineer"
+                    ],
+                    "Famous_People": [
+                        "Nikola Tesla",
+                        "Thomas Edison",
+                        "Guglielmo Marconi",
+                        "James Clerk Maxwell"
+                    ],
+                    "Image_URL": "https://example.com/electrical_engineering.jpg",
+                    "Interesting_Fact": "Electrical engineering powers the modern world, from the electricity in your home to the communication systems that connect the globe.",
+                    "Narration": "Electrical Engineering is the branch of engineering that deals with the study and application of electricity, electronics, and electromagnetism. It involves designing, developing, and maintaining electrical systems and devices. Key areas in electrical engineering include Circuit Design, which focuses on creating electrical circuits that perform specific functions; Electromagnetism, which studies the interaction between electric currents and magnetic fields; Power Systems, which involve the generation, transmission, and distribution of electricity; Control Systems, which regulate the behavior of other systems using electrical signals; and Telecommunications, which covers the transmission of information over distances through electrical means. If you're interested in working with electricity and electronic devices, electrical engineering offers careers such as becoming an electrical engineer, who works on electrical systems and devices; an electronics engineer, who designs and develops electronic circuits and devices; a power engineer, who focuses on power generation and distribution; a control systems engineer, who designs systems that control other systems; or a telecommunications engineer, who works on communication systems. Famous electrical engineers include Nikola Tesla, who contributed to the development of alternating current; Thomas Edison, who invented the light bulb and phonograph; Guglielmo Marconi, who developed the first radio transmission; and James Clerk Maxwell, who formulated the theory of electromagnetism. Electrical engineering is essential for powering modern society, making it one of the most important fields in engineering."
+                },
+                "Chemical Engineering": {
+                    "isHighPaying": true,
+                    "Future_Evolution_Score": 8,
+                    "Topics": [
+                        "Process Engineering",
+                        "Chemical Reactions",
+                        "Thermodynamics",
+                        "Biochemical Engineering",
+                        "Material Science"
+                    ],
+                    "Career_Paths": [
+                        "Chemical Engineer",
+                        "Process Engineer",
+                        "Biochemical Engineer",
+                        "Materials Engineer",
+                        "Petroleum Engineer"
+                    ],
+                    "Famous_People": [
+                        "Carl Bosch",
+                        "Linus Pauling",
+                        "George E. Davis",
+                        "Frances Arnold"
+                    ],
+                    "Image_URL": "https://example.com/chemical_engineering.jpg",
+                    "Interesting_Fact": "Chemical engineering combines principles of chemistry, physics, and biology to develop processes and products that improve our quality of life.",
+                    "Narration": "Chemical Engineering is the branch of engineering that combines principles of chemistry, physics, biology, and mathematics to solve problems involving the production or use of chemicals, fuel, drugs, food, and many other products. It's about designing processes that turn raw materials into valuable products efficiently and safely. Key areas in chemical engineering include Process Engineering, which focuses on designing and optimizing chemical processes; Chemical Reactions, which study how different substances interact to form new products; Thermodynamics, which involves the principles of energy and heat transfer in chemical processes; Biochemical Engineering, which applies chemical engineering principles to biological systems; and Material Science, which explores the properties of materials to develop new products. If you're interested in working with chemical processes and developing new materials, chemical engineering offers careers such as becoming a chemical engineer, who designs and operates chemical plants; a process engineer, who optimizes production processes; a biochemical engineer, who works on processes involving biological organisms; a materials engineer, who develops new materials; or a petroleum engineer, who focuses on the extraction and processing of oil and gas. Famous chemical engineers include Carl Bosch, who developed high-pressure industrial processes; Linus Pauling, known for his work on chemical bonding and molecular biology; George E. Davis, the 'father of chemical engineering'; and Frances Arnold, who pioneered the directed evolution of enzymes. Chemical engineering is essential for developing products and processes that improve our quality of life, making it a vital field in engineering."
+                },
+                "Aerospace Engineering": {
+                    "isHighPaying": true,
+                    "Future_Evolution_Score": 10,
+                    "Topics": [
+                        "Aerodynamics",
+                        "Propulsion Systems",
+                        "Spacecraft Design",
+                        "Avionics",
+                        "Structural Analysis"
+                    ],
+                    "Career_Paths": [
+                        "Aerospace Engineer",
+                        "Avionics Engineer",
+                        "Propulsion Engineer",
+                        "Spacecraft Designer",
+                        "Flight Test Engineer"
+                    ],
+                    "Famous_People": [
+                        "Wernher von Braun",
+                        "Neil Armstrong",
+                        "Amelia Earhart",
+                        "Elon Musk"
+                    ],
+                    "Image_URL": "https://example.com/aerospace_engineering.jpg",
+                    "Interesting_Fact": "Aerospace engineering takes us to the skies and beyond, designing aircraft and spacecraft that push the boundaries of exploration and travel.",
+                    "Narration": "Aerospace Engineering is the branch of engineering that focuses on the development of aircraft and spacecraft. It's about designing and testing vehicles that can fly within and beyond Earth's atmosphere. Key areas in aerospace engineering include Aerodynamics, which studies the behavior of air as it interacts with solid objects like wings and fuselages; Propulsion Systems, which focus on engines and other systems that move aircraft and spacecraft; Spacecraft Design, which involves creating vehicles that can operate in space; Avionics, which covers the electronic systems used in aerospace vehicles; and Structural Analysis, which ensures that aerospace vehicles are strong and light enough to withstand the forces they encounter. If you're fascinated by flight and space exploration, aerospace engineering offers careers such as becoming an aerospace engineer, who designs and tests aircraft and spacecraft; an avionics engineer, who works on the electronic systems of aerospace vehicles; a propulsion engineer, who develops engines and other propulsion systems; a spacecraft designer, who creates vehicles for space missions; or a flight test engineer, who evaluates the performance of aerospace vehicles. Famous aerospace engineers and pioneers include Wernher von Braun, who developed the Saturn V rocket that took humans to the moon; Neil Armstrong, the first human to walk on the moon; Amelia Earhart, a pioneering aviator; and Elon Musk, who founded SpaceX to revolutionize space travel. Aerospace engineering is at the forefront of technology, pushing the boundaries of what’s possible in air and space travel."
+                }
+            }
+        },
+        "Mathematics": {
+            "Subfields": {
+                "Pure Mathematics": {
+                    "isHighPaying": true,
+                    "Future_Evolution_Score": 8,
+                    "Topics": [
+                        "Algebra",
+                        "Calculus",
+                        "Geometry",
+                        "Number Theory",
+                        "Topology"
+                    ],
+                    "Career_Paths": [
+                        "Mathematician",
+                        "Data Analyst",
+                        "Cryptographer",
+                        "Quantitative Analyst",
+                        "Professor"
+                    ],
+                    "Famous_People": [
+                        "Carl Gauss",
+                        "Euclid",
+                        "Leonhard Euler",
+                        "Emmy Noether"
+                    ],
+                    "Image_URL": "https://example.com/pure_mathematics.jpg",
+                    "Interesting_Fact": "Pure mathematics explores abstract concepts and structures that form the foundation for all other branches of mathematics and many applications in science and engineering.",
+                    "Narration": "Pure Mathematics is the branch of mathematics that focuses on abstract concepts and structures, without necessarily having a direct application in mind. It's about exploring the fundamental principles of mathematics that underpin all other areas of math and science. Key topics in pure mathematics include Algebra, which deals with symbols and the rules for manipulating them; Calculus, which studies continuous change; Geometry, which explores the properties and relations of points, lines, surfaces, and solids; Number Theory, which examines the properties of numbers, especially integers; and Topology, which is concerned with the properties of space that are preserved under continuous transformations. If you're fascinated by the theoretical side of mathematics, pure mathematics offers careers such as becoming a mathematician, who studies and develops mathematical theories; a data analyst, who uses mathematical techniques to analyze data; a cryptographer, who uses mathematics to secure information; a quantitative analyst, who applies mathematical models to finance and economics; or a professor, who teaches and conducts research in mathematics. Famous pure mathematicians include Carl Gauss, known as the 'prince of mathematicians'; Euclid, the 'father of geometry'; Leonhard Euler, who made important contributions to many areas of mathematics; and Emmy Noether, who revolutionized abstract algebra. Pure mathematics is the foundation for many fields of science and technology, making it a crucial area of study."
+                },
+                "Applied Mathematics": {
+                    "isHighPaying": true,
+                    "Future_Evolution_Score": 9,
+                    "Topics": [
+                        "Statistics",
+                        "Operations Research",
+                        "Mathematical Modeling",
+                        "Computational Mathematics",
+                        "Financial Mathematics"
+                    ],
+                    "Career_Paths": [
+                        "Data Scientist",
+                        "Operations Research Analyst",
+                        "Actuary",
+                        "Financial Analyst",
+                        "Mathematical Modeler"
+                    ],
+                    "Famous_People": [
+                        "John von Neumann",
+                        "Alan Turing",
+                        "Norbert Wiener",
+                        "Kiyoshi Ito"
+                    ],
+                    "Image_URL": "https://example.com/applied_mathematics.jpg",
+                    "Interesting_Fact": "Applied mathematics uses mathematical methods and models to solve practical problems in fields like science, engineering, finance, and industry.",
+                    "Narration": "Applied Mathematics is the branch of mathematics that focuses on using mathematical methods and models to solve real-world problems. It's about applying the tools of mathematics to make sense of complex systems and predict outcomes in various fields. Key areas in applied mathematics include Statistics, which involves collecting, analyzing, and interpreting data; Operations Research, which focuses on optimizing processes and decision-making; Mathematical Modeling, which uses mathematical equations and simulations to represent real-world systems; Computational Mathematics, which involves using computers to solve mathematical problems; and Financial Mathematics, which applies mathematical techniques to finance and economics. If you're interested in using mathematics to tackle practical challenges, applied mathematics offers careers such as becoming a data scientist, who analyzes and interprets complex data sets; an operations research analyst, who optimizes organizational processes; an actuary, who assesses financial risks; a financial analyst, who uses mathematical models to predict market trends; or a mathematical modeler, who creates models to simulate real-world phenomena. Famous applied mathematicians include John von Neumann, who contributed to game theory and quantum mechanics; Alan Turing, the father of computer science; Norbert Wiener, who founded the field of cybernetics; and Kiyoshi Ito, who developed stochastic calculus. Applied mathematics is essential for solving practical problems in science, engineering, finance, and industry, making it a highly valuable field."
+                }
+            }
+        }
+    }
+}

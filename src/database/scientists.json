@@ -1,0 +1,514 @@
+[
+    {
+        "name": "John Snow",
+        "field": "Epidemiology",
+        "contributions": "Father of modern epidemiology; traced cholera outbreak in London.",
+        "years": "1813-1858",
+        "mdi_icon": "mdi-virus",
+        "gender": "Male"
+    },
+    {
+        "name": "Ignaz Semmelweis",
+        "field": "Medicine",
+        "contributions": "Introduced handwashing in medical practice, reducing puerperal fever.",
+        "years": "1818-1865",
+        "mdi_icon": "mdi-hand-water",
+        "gender": "Male"
+    },
+    {
+        "name": "Florence Nightingale",
+        "field": "Public Health",
+        "contributions": "Pioneer in statistical graphics; improved sanitary practices in hospitals.",
+        "years": "1820-1910",
+        "mdi_icon": "mdi-hospital",
+        "gender": "Female"
+    },
+    {
+        "name": "Edward Jenner",
+        "field": "Medicine",
+        "contributions": "Developed the first successful smallpox vaccine.",
+        "years": "1749-1823",
+        "mdi_icon": "mdi-syringe",
+        "gender": "Male"
+    },
+    {
+        "name": "Girolamo Fracastoro",
+        "field": "Medicine",
+        "contributions": "Proposed the germ theory of disease.",
+        "years": "1478-1553",
+        "mdi_icon": "mdi-microscope",
+        "gender": "Male"
+    },
+    {
+        "name": "Sir Richard Doll",
+        "field": "Epidemiology",
+        "contributions": "Linked smoking to lung cancer.",
+        "years": "1912-2005",
+        "mdi_icon": "mdi-lungs",
+        "gender": "Male"
+    },
+    {
+        "name": "Alice Stewart",
+        "field": "Epidemiology",
+        "contributions": "Researched the dangers of prenatal X-rays and radiation.",
+        "years": "1906-2002",
+        "mdi_icon": "mdi-radiology-box",
+        "gender": "Female"
+    },
+    {
+        "name": "William Farr",
+        "field": "Statistics",
+        "contributions": "Founder of medical statistics; systematized recording causes of death.",
+        "years": "1807-1883",
+        "mdi_icon": "mdi-chart-line",
+        "gender": "Male"
+    },
+    {
+        "name": "Joseph Goldberger",
+        "field": "Epidemiology",
+        "contributions": "Discovered the dietary cause of pellagra.",
+        "years": "1874-1929",
+        "mdi_icon": "mdi-food-apple",
+        "gender": "Male"
+    },
+    {
+        "name": "Janet Lane-Claypon",
+        "field": "Epidemiology",
+        "contributions": "Pioneer in cancer research, especially breast cancer.",
+        "years": "1877-1967",
+        "mdi_icon": "mdi-ribbon",
+        "gender": "Female"
+    },
+    {
+        "name": "Louis Pasteur",
+        "field": "Microbiology",
+        "contributions": "Developed pasteurization and vaccines for rabies and anthrax.",
+        "years": "1822-1895",
+        "mdi_icon": "mdi-bacteria",
+        "gender": "Male"
+    },
+    {
+        "name": "Robert Koch",
+        "field": "Microbiology",
+        "contributions": "Identified causative agents of tuberculosis, cholera, and anthrax.",
+        "years": "1843-1910",
+        "mdi_icon": "mdi-biohazard",
+        "gender": "Male"
+    },
+    {
+        "name": "Alexander Fleming",
+        "field": "Medicine",
+        "contributions": "Discovered penicillin.",
+        "years": "1881-1955",
+        "mdi_icon": "mdi-pill",
+        "gender": "Male"
+    },
+    {
+        "name": "Paul Ehrlich",
+        "field": "Immunology",
+        "contributions": "Developed first cure for syphilis; advanced immunology.",
+        "years": "1854-1915",
+        "mdi_icon": "mdi-shield-plus",
+        "gender": "Male"
+    },
+    {
+        "name": "Barbara McClintock",
+        "field": "Genetics",
+        "contributions": "Discovered transposable elements (jumping genes).",
+        "years": "1902-1992",
+        "mdi_icon": "mdi-dna",
+        "gender": "Female"
+    },
+    {
+        "name": "Rosalind Franklin",
+        "field": "Biophysics",
+        "contributions": "Contributed to understanding DNA, RNA, viruses.",
+        "years": "1920-1958",
+        "mdi_icon": "mdi-molecule",
+        "gender": "Female"
+    },
+    {
+        "name": "James Watson",
+        "field": "Genetics",
+        "contributions": "Co-discovered the double-helix structure of DNA.",
+        "years": "1928-present",
+        "mdi_icon": "mdi-dna",
+        "gender": "Male"
+    },
+    {
+        "name": "Francis Crick",
+        "field": "Genetics",
+        "contributions": "Co-discovered the double-helix structure of DNA.",
+        "years": "1916-2004",
+        "mdi_icon": "mdi-dna",
+        "gender": "Male"
+    },
+    {
+        "name": "Gregor Mendel",
+        "field": "Genetics",
+        "contributions": "Father of genetics; worked on inheritance of traits in pea plants.",
+        "years": "1822-1884",
+        "mdi_icon": "mdi-flower",
+        "gender": "Male"
+    },
+    {
+        "name": "Maurice Hilleman",
+        "field": "Virology",
+        "contributions": "Developed over 40 vaccines, including for measles and mumps.",
+        "years": "1919-2005",
+        "mdi_icon": "mdi-virus",
+        "gender": "Male"
+    },
+    {
+        "name": "Katalin Karikó",
+        "field": "Biochemistry",
+        "contributions": "Pioneered mRNA technology for COVID-19 vaccines.",
+        "years": "1955-present",
+        "mdi_icon": "mdi-dna",
+        "gender": "Female"
+    },
+    {
+        "name": "Ronald Ross",
+        "field": "Epidemiology",
+        "contributions": "Discovered malaria parasite in mosquitoes.",
+        "years": "1857-1932",
+        "mdi_icon": "mdi-virus",
+        "gender": "Male"
+    },
+    {
+        "name": "Max von Pettenkofer",
+        "field": "Public Health",
+        "contributions": "Promoted sanitation and hygiene in urban areas.",
+        "years": "1818-1901",
+        "mdi_icon": "mdi-city",
+        "gender": "Male"
+    },
+    {
+        "name": "Thomas Sydenham",
+        "field": "Medicine",
+        "contributions": "English Hippocrates; emphasized clinical observation.",
+        "years": "1624-1689",
+        "mdi_icon": "mdi-doctor",
+        "gender": "Male"
+    },
+    {
+        "name": "Andreas Vesalius",
+        "field": "Anatomy",
+        "contributions": "Founder of modern human anatomy.",
+        "years": "1514-1564",
+        "mdi_icon": "mdi-human-male",
+        "gender": "Male"
+    },
+    {
+        "name": "Hippocrates",
+        "field": "Medicine",
+        "contributions": "Father of Medicine; Hippocratic Oath.",
+        "years": "460-370 BC",
+        "mdi_icon": "mdi-doctor",
+        "gender": "Male"
+    },
+    {
+        "name": "William Harvey",
+        "field": "Physiology",
+        "contributions": "Described the circulation of blood.",
+        "years": "1578-1657",
+        "mdi_icon": "mdi-heart-pulse",
+        "gender": "Male"
+    },
+    {
+        "name": "Alfred Grotjahn",
+        "field": "Social Medicine",
+        "contributions": "Pioneer in social hygiene and social medicine.",
+        "years": "1869-1931",
+        "mdi_icon": "mdi-hand-heart",
+        "gender": "Male"
+    },
+    {
+        "name": "Alfred Blalock",
+        "field": "Surgery",
+        "contributions": "Developed the first successful open heart surgery techniques.",
+        "years": "1899-1964",
+        "mdi_icon": "mdi-surgical-knife",
+        "gender": "Male"
+    },
+    {
+        "name": "Harvey Cushing",
+        "field": "Neurosurgery",
+        "contributions": "Pioneer of brain surgery techniques.",
+        "years": "1869-1939",
+        "mdi_icon": "mdi-brain",
+        "gender": "Male"
+    },
+    {
+        "name": "Norman Bethune",
+        "field": "Medicine",
+        "contributions": "Pioneered mobile blood transfusion services.",
+        "years": "1890-1939",
+        "mdi_icon": "mdi-blood-bag",
+        "gender": "Male"
+    },
+    {
+        "name": "Elie Metchnikoff",
+        "field": "Immunology",
+        "contributions": "Father of natural immunity; discovered phagocytosis.",
+        "years": "1845-1916",
+        "mdi_icon": "mdi-shield-bug",
+        "gender": "Male"
+    },
+    {
+        "name": "Henry Gray",
+        "field": "Anatomy",
+        "contributions": "Authored 'Gray's Anatomy', a comprehensive anatomical reference.",
+        "years": "1827-1861",
+        "mdi_icon": "mdi-book-open-page-variant",
+        "gender": "Male"
+    },
+    {
+        "name": "Walter Reed",
+        "field": "Medicine",
+        "contributions": "Proved mosquitoes transmit yellow fever.",
+        "years": "1851-1902",
+        "mdi_icon": "mdi-mosquito",
+        "gender": "Male"
+    },
+    {
+        "name": "Karl Landsteiner",
+        "field": "Immunology",
+        "contributions": "Discovered blood groups, making transfusions safe.",
+        "years": "1868-1943",
+        "mdi_icon": "mdi-blood-type",
+        "gender": "Male"
+    },
+    {
+        "name": "Albert Sabin",
+        "field": "Virology",
+        "contributions": "Developed oral polio vaccine.",
+        "years": "1906-1993",
+        "mdi_icon": "mdi-poliovirus",
+        "gender": "Male"
+    },
+    {
+        "name": "Jonas Salk",
+        "field": "Virology",
+        "contributions": "Developed the first effective polio vaccine.",
+        "years": "1914-1995",
+        "mdi_icon": "mdi-virus",
+        "gender": "Male"
+    },
+    {
+        "name": "Jean-Martin Charcot",
+        "field": "Neurology",
+        "contributions": "Founder of modern neurology; studied multiple sclerosis.",
+        "years": "1825-1893",
+        "mdi_icon": "mdi-brain",
+        "gender": "Male"
+    },
+    {
+        "name": "Joseph Lister",
+        "field": "Surgery",
+        "contributions": "Pioneer of antiseptic surgery.",
+        "years": "1827-1912",
+        "mdi_icon": "mdi-surgical-knife",
+        "gender": "Male"
+    },
+    {
+        "name": "Antonie van Leeuwenhoek",
+        "field": "Microbiology",
+        "contributions": "Father of microbiology; improved the microscope.",
+        "years": "1632-1723",
+        "mdi_icon": "mdi-magnify",
+        "gender": "Male"
+    },
+    {
+        "name": "Mary Leakey",
+        "field": "Paleoanthropology",
+        "contributions": "Discovered important hominid fossils in Africa.",
+        "years": "1913-1996",
+        "mdi_icon": "mdi-human-male",
+        "gender": "Female"
+    },
+    {
+        "name": "Richard Leakey",
+        "field": "Paleoanthropology",
+        "contributions": "Discovered early human fossils.",
+        "years": "1944-2022",
+        "mdi_icon": "mdi-human-male",
+        "gender": "Male"
+    },
+    {
+        "name": "Melinda Gates",
+        "field": "Philanthropy",
+        "contributions": "Global health and education initiatives.",
+        "years": "1964-present",
+        "mdi_icon": "mdi-humanitarian",
+        "gender": "Female"
+    },
+    {
+        "name": "Bill Gates",
+        "field": "Philanthropy",
+        "contributions": "Global health and technology innovations.",
+        "years": "1955-present",
+        "mdi_icon": "mdi-humanitarian",
+        "gender": "Male"
+    },
+    {
+        "name": "Margaret Mead",
+        "field": "Anthropology",
+        "contributions": "Studies of culture and personality in Pacific Islands.",
+        "years": "1901-1978",
+        "mdi_icon": "mdi-book-open-page-variant",
+        "gender": "Female"
+    },
+    {
+        "name": "Franz Boas",
+        "field": "Anthropology",
+        "contributions": "Father of American anthropology; cultural relativism.",
+        "years": "1858-1942",
+        "mdi_icon": "mdi-earth",
+        "gender": "Male"
+    },
+    {
+        "name": "Émile Durkheim",
+        "field": "Sociology",
+        "contributions": "Founder of sociology; studied social facts and institutions.",
+        "years": "1858-1917",
+        "mdi_icon": "mdi-domain",
+        "gender": "Male"
+    },
+    {
+        "name": "Max Weber",
+        "field": "Sociology",
+        "contributions": "Theory of social action, the protestant ethic, and the spirit of capitalism.",
+        "years": "1864-1920",
+        "mdi_icon": "mdi-scale-balance",
+        "gender": "Male"
+    },
+    {
+        "name": "Karl Marx",
+        "field": "Philosophy",
+        "contributions": "Developed the theory of Marxism; wrote 'Das Kapital'.",
+        "years": "1818-1883",
+        "mdi_icon": "mdi-hammer-sickle",
+        "gender": "Male"
+    },
+    {
+        "name": "Herbert Spencer",
+        "field": "Philosophy",
+        "contributions": "Social Darwinism; coined 'survival of the fittest'.",
+        "years": "1820-1903",
+        "mdi_icon": "mdi-human",
+        "gender": "Male"
+    },
+    {
+        "name": "William James",
+        "field": "Psychology",
+        "contributions": "Father of American psychology; pragmatism.",
+        "years": "1842-1910",
+        "mdi_icon": "mdi-brain",
+        "gender": "Male"
+    },
+    {
+        "name": "Sigmund Freud",
+        "field": "Psychoanalysis",
+        "contributions": "Founder of psychoanalysis; theories on the unconscious mind.",
+        "years": "1856-1939",
+        "mdi_icon": "mdi-head-question",
+        "gender": "Male"
+    },
+    {
+        "name": "Carl Jung",
+        "field": "Psychoanalysis",
+        "contributions": "Analytical psychology; concepts of archetypes and collective unconscious.",
+        "years": "1875-1961",
+        "mdi_icon": "mdi-head-cog",
+        "gender": "Male"
+    },
+    {
+        "name": "Alfred Adler",
+        "field": "Psychology",
+        "contributions": "Individual psychology; concepts of inferiority complex.",
+        "years": "1870-1937",
+        "mdi_icon": "mdi-human-male",
+        "gender": "Male"
+    },
+    {
+        "name": "Jean Piaget",
+        "field": "Developmental Psychology",
+        "contributions": "Theory of cognitive development in children.",
+        "years": "1896-1980",
+        "mdi_icon": "mdi-human-child",
+        "gender": "Male"
+    },
+    {
+        "name": "B.F. Skinner",
+        "field": "Behavioral Psychology",
+        "contributions": "Operant conditioning; behaviorism.",
+        "years": "1904-1990",
+        "mdi_icon": "mdi-brain",
+        "gender": "Male"
+    },
+    {
+        "name": "Ivan Pavlov",
+        "field": "Physiology",
+        "contributions": "Classical conditioning; famous for Pavlov's dogs.",
+        "years": "1849-1936",
+        "mdi_icon": "mdi-dog",
+        "gender": "Male"
+    },
+    {
+        "name": "Carl Rogers",
+        "field": "Humanistic Psychology",
+        "contributions": "Client-centered therapy; human potential movement.",
+        "years": "1902-1987",
+        "mdi_icon": "mdi-human",
+        "gender": "Male"
+    },
+    {
+        "name": "Abraham Maslow",
+        "field": "Humanistic Psychology",
+        "contributions": "Maslow's hierarchy of needs.",
+        "years": "1908-1970",
+        "mdi_icon": "mdi-pyramid",
+        "gender": "Male"
+    },
+    {
+        "name": "Wilhelm Wundt",
+        "field": "Psychology",
+        "contributions": "Father of experimental psychology; founded the first psychology lab.",
+        "years": "1832-1920",
+        "mdi_icon": "mdi-laboratory",
+        "gender": "Male"
+    },
+    {
+        "name": "Gustav Fechner",
+        "field": "Psychophysics",
+        "contributions": "Founder of psychophysics; studied the relationship between stimuli and sensation.",
+        "years": "1801-1887",
+        "mdi_icon": "mdi-lightbulb",
+        "gender": "Male"
+    },
+    {
+        "name": "Alfred Binet",
+        "field": "Psychology",
+        "contributions": "Developed the first practical intelligence test.",
+        "years": "1857-1911",
+        "mdi_icon": "mdi-clipboard-check",
+        "gender": "Male"
+    },
+    {
+        "name": "Lev Vygotsky",
+        "field": "Developmental Psychology",
+        "contributions": "Sociocultural theory; studied children's cognitive development.",
+        "years": "1896-1934",
+        "mdi_icon": "mdi-human-child",
+        "gender": "Male"
+    },
+    {
+        "name": "William Tuke",
+        "field": "Mental Health",
+        "contributions": "Promoted humane treatment of the mentally ill; established the York Retreat.",
+        "years": "1732-1822",
+        "mdi_icon": "mdi-heart",
+        "gender": "Male"
+    }
+]
