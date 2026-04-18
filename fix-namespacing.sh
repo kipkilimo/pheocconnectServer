@@ -147,7 +147,7 @@ if [ -f "$EXAM_SCHEMA" ]; then
     sed -i 's/: ApprovalResponse!/: ExamApprovalResponse!/g' $EXAM_SCHEMA
     sed -i 's/: CreateSessionResponse!/: CreateExamSessionResponse!/g' $EXAM_SCHEMA
     sed -i 's/: QRCodeData!/: ExamQRCodeData!/g' $EXAM_SCHEMA
-    sed -i 's/registerForGroupSession(.*): RegistrationResponse!/registerForGroupSession(input: RegisterForExamSessionInput!): ExamRegistrationResponse!/g' $EXAM_SCHEMA
+    sed -i 's/registerForGroupTestSession(.*): RegistrationResponse!/registerForGroupTestSession(input: RegisterForExamSessionInput!): ExamRegistrationResponse!/g' $EXAM_SCHEMA
     sed -i 's/registerForExam(.*): RegistrationResponse!/registerForExam(input: ExamRegistrationInput!): ExamRegistrationResponse!/g' $EXAM_SCHEMA
     sed -i 's/resendSessionQRCode(.*): RegistrationResponse!/resendSessionQRCode(examId: ID!, email: String!): ExamRegistrationResponse!/g' $EXAM_SCHEMA
     

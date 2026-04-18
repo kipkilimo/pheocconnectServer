@@ -304,7 +304,7 @@ export const examTypeDefs = gql`
 
     # Registration & participation
     registerForExam(input: ExamRegistrationInput!): ExamRegistrationResponse!
-    registerForExamGroupSession(
+    registerForGroupTestSession(
       input: RegisterForExamSessionInput!
     ): ExamRegistrationResponse!
     manageExamRegistrations(

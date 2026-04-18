@@ -5,332 +5,206 @@ import mongoose, { Schema, Document } from "mongoose";
 // ENUMS
 // ============================================
 
-export enum RegistrationStatusEnum {
+export enum PaperRegistrationStatusEnum {
   PENDING = "PENDING",
+  WAITING = "WAITING",
   APPROVED = "APPROVED",
   REJECTED = "REJECTED",
 }
 
 export enum PaperStatusEnum {
   DRAFT = "DRAFT",
-  PENDING_APPROVAL = "PENDING_APPROVAL",
   ACTIVE = "ACTIVE",
   COMPLETED = "COMPLETED",
-  CANCELLED = "CANCELLED",
 }
 
 // ============================================
 // INTERFACES
 // ============================================
 
-// Rect interface for annotation position
-export interface IRect {
+export interface IPaperRect {
   x: number;
   y: number;
   width: number;
   height: number;
 }
 
-// Author info interface
-export interface IAuthorInfo {
+export interface IPaperAuthorInfo {
   id: string;
   name: string;
-  email: string;
+  emailAddress: string;
 }
 
-// Reaction interface
-export interface IReaction {
+export interface IPaperReaction {
   id: string;
   type: string;
   text?: string;
-  author: IAuthorInfo;
+  author: IPaperAuthorInfo;
   createdAt: string;
 }
 
-// Annotation interface
-export interface IAnnotation {
+export interface IPaperAnnotation {
   id: string;
   page: number;
-  rect: IRect;
+  rect: IPaperRect;
   title?: string;
   text: string;
-  author: IAuthorInfo;
-  reactions: IReaction[];
+  author: IPaperAuthorInfo;
+  reactions: IPaperReaction[];
   createdAt: string;
   updatedAt?: string;
 }
 
-// Live Session interface
-export interface ILiveSession {
-  isActive: boolean;
-  startedAt?: string;
-  endedAt?: string;
-  currentPage?: number;
-  activeAnnotationId?: string;
-  controllerId?: mongoose.Types.ObjectId;
-  participants?: mongoose.Types.ObjectId[];
-}
-
-// Access Request interface
-export interface IAccessRequest {
+export interface IPaperRegistration {
   id: string;
-  email: string;
-  name: string;
-  reason?: string;
-  requestedAt: string;
-  status: string; // "PENDING" | "APPROVED" | "DENIED"
-  approvedAt?: string;
-  deniedAt?: string;
-}
-
-// Approved Collaborator interface
-export interface IApprovedCollaborator {
-  email: string;
-  name: string;
-  approvedAt: string;
-  approvedBy: mongoose.Types.ObjectId;
-}
-
-// Pre-registration Detail interface
-export interface IPreRegistrationDetail {
-  id: string;
-  sessionId?: string;
+  sessionId: string;
   userId?: string;
   name: string;
   emailAddress: string;
-  email?: string;
   courseTaken?: string;
   level?: string;
   registeredAt: string;
   responses?: string;
-  status: RegistrationStatusEnum;
+  status: PaperRegistrationStatusEnum;
   approvalToken: string;
   registeredVia?: string;
   approvedAt?: string;
+  rejectedAt?: string;
+
+  // NEW fields for token renewal
+  lastTokenIssuedAt?: Date;
+  lastToken?: string;
 }
 
-// Session Registration for waiting list
-export interface ISessionRegistration {
-  id: string;
-  sessionId: string;
-  email: string;
-  name: string;
-  courseTaken?: string;
-  level?: string;
-  registeredAt: string;
-  status: RegistrationStatusEnum;
-  approvalToken: string;
-  approvedAt?: string;
-  registeredVia?: string;
-}
-
-// Main Paper interface
 export interface IPaper extends Document {
   title: string;
   objective: string;
-  url?: string;
-  accessKey?: string;
-  sessionId?: string;
-  createdBy: mongoose.Types.ObjectId;
-  createdDate?: string;
-  journalClubEventDate?: string;
-  status: PaperStatusEnum;
 
-  // Annotation system
-  annotations: mongoose.Types.ObjectId[];
+  sessionId: string;
+  createdBy: mongoose.Types.ObjectId;
+  sessionStartTime: string;
+  sessionEndTime: string;
+  qrCodeUrl: string;
+  url: string;
+
+  registrations: IPaperRegistration[];
+
+  // Annotations
+  annotations: IPaperAnnotation[];
   annotationCount: number;
 
-  // Live session
-  liveSession: ILiveSession;
-
-  // QR Code & Access Management
-  qrCodeUrl?: string;
-  qrCodePdfPath?: string;
-  joinUrl?: string;
-  pendingRequests: IAccessRequest[];
-  approvedCollaborators: IApprovedCollaborator[];
-
-  // Participant Management
-  participants: IPreRegistrationDetail[];
-  waitingList: ISessionRegistration[];
-  admittedParticipants: IPreRegistrationDetail[];
   maxParticipants?: number;
   isSessionOpen?: boolean;
-  sessionStartTime?: string;
-  sessionEndTime?: string;
+
+  createdAt: string;
+  updatedAt?: string;
 }
 
 // ============================================
 // SUB-SCHEMAS
 // ============================================
 
-// Rect Schema
-const RectSchema = new Schema<IRect>({
-  x: { type: Number, required: true },
-  y: { type: Number, required: true },
-  width: { type: Number, required: true },
-  height: { type: Number, required: true },
-});
+const PaperRectSchema = new Schema<IPaperRect>(
+  {
+    x: { type: Number, required: true },
+    y: { type: Number, required: true },
+    width: { type: Number, required: true },
+    height: { type: Number, required: true },
+  },
+  { _id: false },
+);
 
-// Author Info Schema
-const AuthorInfoSchema = new Schema<IAuthorInfo>({
-  id: { type: String, required: true },
-  name: { type: String, required: true },
-  email: { type: String, required: true },
-});
+const PaperAuthorInfoSchema = new Schema<IPaperAuthorInfo>(
+  {
+    id: { type: String, required: true },
+    name: { type: String, required: true },
+    emailAddress: { type: String, required: true },
+  },
+  { _id: false },
+);
 
-// Reaction Schema
-const ReactionSchema = new Schema<IReaction>({
-  id: {
-    type: String,
-    required: true,
-    default: () => new mongoose.Types.ObjectId().toString(),
+const PaperReactionSchema = new Schema<IPaperReaction>(
+  {
+    id: {
+      type: String,
+      default: () => new mongoose.Types.ObjectId().toString(),
+    },
+    type: { type: String, required: true },
+    text: { type: String },
+    author: { type: PaperAuthorInfoSchema, required: true },
+    createdAt: { type: String, default: () => new Date().toISOString() },
   },
-  type: { type: String, required: true },
-  text: { type: String },
-  author: { type: AuthorInfoSchema, required: true },
-  createdAt: {
-    type: String,
-    required: true,
-    default: () => new Date().toISOString(),
-  },
-});
+  { _id: false },
+);
 
-// Annotation Schema (embedded, not referenced)
-const AnnotationSchema = new Schema<IAnnotation>({
-  id: {
-    type: String,
-    required: true,
-    default: () => new mongoose.Types.ObjectId().toString(),
+const PaperAnnotationSchema = new Schema<IPaperAnnotation>(
+  {
+    id: {
+      type: String,
+      default: () => new mongoose.Types.ObjectId().toString(),
+    },
+    page: { type: Number, required: true },
+    rect: { type: PaperRectSchema, required: true },
+    title: { type: String },
+    text: { type: String, required: true },
+    author: { type: PaperAuthorInfoSchema, required: true },
+    reactions: { type: [PaperReactionSchema], default: [] },
+    createdAt: { type: String, default: () => new Date().toISOString() },
+    updatedAt: { type: String },
   },
-  page: { type: Number, required: true },
-  rect: { type: RectSchema, required: true },
-  title: { type: String },
-  text: { type: String, required: true },
-  author: { type: AuthorInfoSchema, required: true },
-  reactions: [ReactionSchema],
-  createdAt: {
-    type: String,
-    required: true,
-    default: () => new Date().toISOString(),
-  },
-  updatedAt: { type: String },
-});
+  { _id: false },
+);
 
-// Live Session Schema
-const LiveSessionSchema = new Schema<ILiveSession>({
-  isActive: { type: Boolean, default: false },
-  startedAt: { type: String },
-  endedAt: { type: String },
-  currentPage: { type: Number, default: 1 },
-  activeAnnotationId: { type: String },
-  controllerId: { type: Schema.Types.ObjectId, ref: "User" },
-  participants: [{ type: Schema.Types.ObjectId, ref: "User" }],
-});
+const PaperRegistrationSchema = new Schema<IPaperRegistration>(
+  {
+    id: {
+      type: String,
+      default: () => new mongoose.Types.ObjectId().toString(),
+    },
 
-// Access Request Schema
-const AccessRequestSchema = new Schema<IAccessRequest>({
-  id: {
-    type: String,
-    required: true,
-    default: () => new mongoose.Types.ObjectId().toString(),
-  },
-  email: { type: String, required: true },
-  name: { type: String, required: true },
-  reason: { type: String },
-  requestedAt: {
-    type: String,
-    required: true,
-    default: () => new Date().toISOString(),
-  },
-  status: {
-    type: String,
-    enum: ["PENDING", "APPROVED", "DENIED"],
-    default: "PENDING",
-    required: true,
-  },
-  approvedAt: { type: String },
-  deniedAt: { type: String },
-});
+    sessionId: { type: String, required: true },
+    userId: { type: String },
 
-// Approved Collaborator Schema
-const ApprovedCollaboratorSchema = new Schema<IApprovedCollaborator>({
-  email: { type: String, required: true },
-  name: { type: String, required: true },
-  approvedAt: {
-    type: String,
-    required: true,
-    default: () => new Date().toISOString(),
-  },
-  approvedBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
-});
+    name: { type: String, required: true },
 
-// Pre-registration Detail Schema
-const PreRegistrationDetailSchema = new Schema<IPreRegistrationDetail>({
-  id: {
-    type: String,
-    required: true,
-    default: () => new mongoose.Types.ObjectId().toString(),
-  },
-  sessionId: { type: String },
-  userId: { type: String },
-  name: { type: String, required: true },
-  emailAddress: { type: String, required: true },
-  email: { type: String },
-  courseTaken: { type: String },
-  level: { type: String },
-  registeredAt: {
-    type: String,
-    required: true,
-    default: () => new Date().toISOString(),
-  },
-  responses: { type: String },
-  status: {
-    type: String,
-    enum: Object.values(RegistrationStatusEnum),
-    default: RegistrationStatusEnum.PENDING,
-    required: true,
-  },
-  approvalToken: {
-    type: String,
-    required: true,
-    default: () => new mongoose.Types.ObjectId().toString(),
-  },
-  registeredVia: { type: String },
-  approvedAt: { type: String },
-});
+    emailAddress: {
+      type: String,
+      required: true,
+      lowercase: true,
+      trim: true,
+    },
+    courseTaken: { type: String },
+    level: { type: String },
 
-// Session Registration Schema (for waiting list)
-const SessionRegistrationSchema = new Schema<ISessionRegistration>({
-  id: {
-    type: String,
-    required: true,
-    default: () => new mongoose.Types.ObjectId().toString(),
+    registeredAt: {
+      type: String,
+      default: () => new Date().toISOString(),
+    },
+
+    responses: { type: String },
+
+    status: {
+      type: String,
+      enum: Object.values(PaperRegistrationStatusEnum),
+      default: PaperRegistrationStatusEnum.PENDING,
+    },
+
+    approvalToken: {
+      type: String,
+      default: () => new mongoose.Types.ObjectId().toString(),
+    },
+
+    registeredVia: { type: String },
+
+    approvedAt: { type: String },
+    rejectedAt: { type: String },
+
+    // New fields for renewal tracking
+    lastTokenIssuedAt: { type: Date }, // when the last JWT was minted
+    lastToken: { type: String }, // optional: store the last token string
   },
-  sessionId: { type: String, required: true },
-  email: { type: String, required: true },
-  name: { type: String, required: true },
-  courseTaken: { type: String },
-  level: { type: String },
-  registeredAt: {
-    type: String,
-    required: true,
-    default: () => new Date().toISOString(),
-  },
-  status: {
-    type: String,
-    enum: Object.values(RegistrationStatusEnum),
-    default: RegistrationStatusEnum.PENDING,
-    required: true,
-  },
-  approvalToken: {
-    type: String,
-    required: true,
-    default: () => new mongoose.Types.ObjectId().toString(),
-  },
-  approvedAt: { type: String },
-  registeredVia: { type: String },
-});
+  { _id: false },
+);
 
 // ============================================
 // MAIN SCHEMA
@@ -340,209 +214,137 @@ const PaperSchema = new Schema<IPaper>(
   {
     title: { type: String, required: true },
     objective: { type: String, required: true },
-    url: { type: String },
-    accessKey: { type: String, required: true },
+
     sessionId: { type: String, required: true },
-    createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    createdDate: { type: String, default: () => new Date().toISOString() },
-    journalClubEventDate: { type: String },
-    status: {
-      type: String,
-      enum: Object.values(PaperStatusEnum),
-      default: PaperStatusEnum.DRAFT,
-    },
 
-    // Annotation system - using embedded documents for annotations
-    annotations: [AnnotationSchema],
-    annotationCount: { type: Number, default: 0 },
-
-    // Live session
-    liveSession: { type: LiveSessionSchema, default: () => ({}) },
-
-    // QR Code & Access Management
     qrCodeUrl: { type: String },
-    qrCodePdfPath: { type: String },
-    joinUrl: { type: String },
-    pendingRequests: [AccessRequestSchema],
-    approvedCollaborators: [ApprovedCollaboratorSchema],
-
-    // Participant Management
-    participants: [PreRegistrationDetailSchema],
-    waitingList: [SessionRegistrationSchema],
-    admittedParticipants: [PreRegistrationDetailSchema],
-    maxParticipants: { type: Number, default: 100 },
-    isSessionOpen: { type: Boolean, default: false },
+    url: { type: String },
     sessionStartTime: { type: String },
     sessionEndTime: { type: String },
+    createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+
+    // ✅ SINGLE SOURCE OF TRUTH
+    registrations: [PaperRegistrationSchema],
+
+    // Annotations
+    annotations: { type: [PaperAnnotationSchema], default: [] },
+    annotationCount: { type: Number, default: 0 },
+
+    maxParticipants: { type: Number },
+    isSessionOpen: { type: Boolean },
+
+    createdAt: {
+      type: String,
+      default: () => new Date().toISOString(),
+    },
+    updatedAt: { type: String },
   },
   {
-    timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
   },
 );
 
 // ============================================
-// VIRTUAL FIELDS
+// VIRTUALS (ALL STATE DERIVED)
 // ============================================
 
-// Available spots for the paper session
-PaperSchema.virtual("availableSpots").get(function (this: IPaper) {
-  if (!this.maxParticipants) return Infinity;
-  const participantCount = this.participants.filter(
-    (p) => p.status === RegistrationStatusEnum.APPROVED,
-  ).length;
-  return Math.max(0, this.maxParticipants - participantCount);
+PaperSchema.virtual("participants").get(function (this: IPaper) {
+  return this.registrations.filter(
+    (r) => r.status === PaperRegistrationStatusEnum.APPROVED,
+  );
 });
 
-// Check if the paper session is full
+PaperSchema.virtual("waitingList").get(function (this: IPaper) {
+  return this.registrations.filter(
+    (r) => r.status === PaperRegistrationStatusEnum.WAITING,
+  );
+});
+
+PaperSchema.virtual("pending").get(function (this: IPaper) {
+  return this.registrations.filter(
+    (r) => r.status === PaperRegistrationStatusEnum.PENDING,
+  );
+});
+
+PaperSchema.virtual("participantCount").get(function (this: IPaper) {
+  return this.registrations.filter(
+    (r) => r.status === PaperRegistrationStatusEnum.APPROVED,
+  ).length;
+});
+
+PaperSchema.virtual("availableSpots").get(function (this: IPaper) {
+  if (!this.maxParticipants) return null;
+
+  const approved = this.registrations.filter(
+    (r) => r.status === PaperRegistrationStatusEnum.APPROVED,
+  ).length;
+
+  return Math.max(0, this.maxParticipants - approved);
+});
+
 PaperSchema.virtual("isFull").get(function (this: IPaper) {
   if (!this.maxParticipants) return false;
-  const participantCount = this.participants.filter(
-    (p) => p.status === RegistrationStatusEnum.APPROVED,
-  ).length;
-  return participantCount >= this.maxParticipants;
-});
 
-// Count of approved participants
-PaperSchema.virtual("participantCount").get(function (this: IPaper) {
-  return this.participants.filter(
-    (p) => p.status === RegistrationStatusEnum.APPROVED,
+  const approved = this.registrations.filter(
+    (r) => r.status === PaperRegistrationStatusEnum.APPROVED,
   ).length;
-});
 
-// Count of pending registrations
-PaperSchema.virtual("pendingRegistrationsCount").get(function (this: IPaper) {
-  return this.participants.filter(
-    (p) => p.status === RegistrationStatusEnum.PENDING,
-  ).length;
-});
-
-// Count of approved registrations
-PaperSchema.virtual("approvedRegistrationsCount").get(function (this: IPaper) {
-  return this.participants.filter(
-    (p) => p.status === RegistrationStatusEnum.APPROVED,
-  ).length;
-});
-
-// Count of rejected registrations
-PaperSchema.virtual("rejectedRegistrationsCount").get(function (this: IPaper) {
-  return this.participants.filter(
-    (p) => p.status === RegistrationStatusEnum.REJECTED,
-  ).length;
+  return approved >= this.maxParticipants;
 });
 
 // ============================================
 // INDEXES
 // ============================================
 
-// Single field indexes
 PaperSchema.index({ sessionId: 1 });
-PaperSchema.index({ accessKey: 1 });
 PaperSchema.index({ createdBy: 1 });
-PaperSchema.index({ status: 1 });
-PaperSchema.index({ "participants.emailAddress": 1 });
-PaperSchema.index({ "participants.status": 1 });
-PaperSchema.index({ "waitingList.email": 1 });
+PaperSchema.index({ "registrations.emailAddress": 1 });
 PaperSchema.index({ isSessionOpen: 1 });
-PaperSchema.index({ sessionStartTime: 1 });
-PaperSchema.index({ sessionEndTime: 1 });
-PaperSchema.index({ createdDate: 1 });
-
-// Compound indexes for common queries
-PaperSchema.index({ status: 1, isSessionOpen: 1 });
-PaperSchema.index({ createdBy: 1, status: 1 });
-PaperSchema.index({ sessionId: 1, "participants.emailAddress": 1 });
-PaperSchema.index({ status: 1, createdDate: -1 });
-
-// Text search index
-PaperSchema.index({ title: "text", objective: "text" });
+PaperSchema.index({ "annotations.id": 1 });
+PaperSchema.index({ "annotations.author.id": 1 });
+PaperSchema.index({ "annotations.reactions.id": 1 });
 
 // ============================================
 // METHODS
 // ============================================
 
 PaperSchema.methods = {
-  // Check if a user is registered
-  isUserRegistered(email: string): boolean {
-    return this.participants.some(
-      (p: IPreRegistrationDetail) =>
-        p.emailAddress === email || p.email === email,
+  findRegistration(emailAddress: string) {
+    return this.registrations.find(
+      (r: IPaperRegistration) => r.emailAddress === emailAddress,
     );
   },
 
-  // Get registration status for a user
-  getUserRegistrationStatus(email: string): RegistrationStatusEnum | null {
-    const registration = this.participants.find(
-      (p: IPreRegistrationDetail) =>
-        p.emailAddress === email || p.email === email,
+  isUserRegistered(emailAddress: string): boolean {
+    return !!this.findRegistration(emailAddress);
+  },
+
+  getUserStatus(emailAddress: string): PaperRegistrationStatusEnum | null {
+    const r = this.findRegistration(emailAddress);
+    return r ? r.status : null;
+  },
+
+  // PaperAnnotation methods
+  findAnnotation(annotationId: string): IPaperAnnotation | null {
+    return (
+      this.annotations?.find((a: IPaperAnnotation) => a.id === annotationId) ||
+      null
     );
-    return registration ? registration.status : null;
   },
 
-  // Check if user is on waiting list
-  isOnWaitingList(email: string): boolean {
-    return this.waitingList.some(
-      (w: ISessionRegistration) => w.email === email,
-    );
-  },
-
-  // Check if session is accessible
-  isSessionAccessible(): boolean {
-    if (!this.isSessionOpen) return false;
-
-    const now = new Date().toISOString();
-    if (this.sessionStartTime && now < this.sessionStartTime) return false;
-    if (this.sessionEndTime && now > this.sessionEndTime) return false;
-
-    return true;
-  },
-
-  // Get available spots count
-  getAvailableSpots(): number {
-    return this.availableSpots;
-  },
-
-  // Add annotation
-  addAnnotation(annotationData: Partial<IAnnotation>): IAnnotation {
-    const annotation = {
-      id: new mongoose.Types.ObjectId().toString(),
-      ...annotationData,
-      createdAt: new Date().toISOString(),
-      reactions: [],
-    } as IAnnotation;
-
-    this.annotations.push(annotation);
-    this.annotationCount = this.annotations.length;
-    return annotation;
-  },
-
-  // Update annotation
-  updateAnnotation(
-    annotationId: string,
-    updates: Partial<IAnnotation>,
-  ): IAnnotation | null {
-    const annotation = this.annotations.find(
-      (a: IAnnotation) => a.id === annotationId,
-    );
-    if (annotation) {
-      Object.assign(annotation, updates);
-      annotation.updatedAt = new Date().toISOString();
+  findReaction(
+    reactionId: string,
+  ): { annotation: IPaperAnnotation; reaction: IPaperReaction } | null {
+    for (const annotation of this.annotations || []) {
+      const reaction = annotation.reactions?.find(
+        (r: IPaperReaction) => r.id === reactionId,
+      );
+      if (reaction) {
+        return { annotation, reaction };
+      }
     }
-    return annotation;
-  },
-
-  // Delete annotation
-  deleteAnnotation(annotationId: string): boolean {
-    const index = this.annotations.findIndex(
-      (a: IAnnotation) => a.id === annotationId,
-    );
-    if (index !== -1) {
-      this.annotations.splice(index, 1);
-      this.annotationCount = this.annotations.length;
-      return true;
-    }
-    return false;
+    return null;
   },
 };
 
@@ -551,51 +353,39 @@ PaperSchema.methods = {
 // ============================================
 
 PaperSchema.statics = {
-  // Find active sessions
-  findActiveSessions() {
-    return this.find({
-      status: PaperStatusEnum.ACTIVE,
-      isSessionOpen: true,
-    }).sort({ createdDate: -1 });
-  },
-
-  // Find sessions by participant email
-  findByParticipantEmail(email: string) {
-    return this.find({
-      "participants.emailAddress": email,
-      "participants.status": RegistrationStatusEnum.APPROVED,
-    });
-  },
-
-  // Find sessions with available spots
   findWithAvailableSpots() {
     return this.find({
-      status: PaperStatusEnum.ACTIVE,
       isSessionOpen: true,
       $expr: {
-        $gt: ["$maxParticipants", { $size: "$participants" }],
+        $gt: [
+          "$maxParticipants",
+          {
+            $size: {
+              $filter: {
+                input: "$registrations",
+                as: "r",
+                cond: { $eq: ["$$r.status", "APPROVED"] },
+              },
+            },
+          },
+        ],
       },
     });
   },
 
-  // Find upcoming sessions
-  findUpcomingSessions() {
-    const now = new Date().toISOString();
-    return this.find({
-      status: PaperStatusEnum.ACTIVE,
-      sessionStartTime: { $gt: now },
-    }).sort({ sessionStartTime: 1 });
+  async findByAnnotationId(annotationId: string) {
+    return this.findOne({ "annotations.id": annotationId });
   },
 
-  // Search papers by text
-  searchPapers(searchText: string) {
-    return this.find(
-      { $text: { $search: searchText } },
-      { score: { $meta: "textScore" } },
-    ).sort({ score: { $meta: "textScore" } });
+  async findByReactionId(reactionId: string) {
+    return this.findOne({ "annotations.reactions.id": reactionId });
   },
 };
-
+PaperSchema.virtual("id").get(function () {
+  return this._id.toString();
+});
+PaperSchema.set("toJSON", { virtuals: true });
+PaperSchema.set("toObject", { virtuals: true });
 // ============================================
 // MODEL
 // ============================================

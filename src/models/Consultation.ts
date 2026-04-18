@@ -1,6 +1,10 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-enum StudyStage {
+/* ============================================
+ ENUMS
+============================================ */
+
+export enum StudyStage {
   CONCEPTUALIZATION = "CONCEPTUALIZATION",
   PROPOSAL_DEVELOPMENT = "PROPOSAL_DEVELOPMENT",
   ETHICAL_CONSIDERATIONS = "ETHICAL_CONSIDERATIONS",
@@ -11,7 +15,7 @@ enum StudyStage {
   MANUSCRIPT_DEVELOPMENT = "MANUSCRIPT_DEVELOPMENT",
 }
 
-enum CourseTaken {
+export enum CourseTaken {
   MASTER_OF_SCIENCE = "MASTER_OF_SCIENCE",
   MASTER_OF_MEDICINE = "MASTER_OF_MEDICINE",
   MASTER_OF_PUBLIC_HEALTH = "MASTER_OF_PUBLIC_HEALTH",
@@ -19,19 +23,13 @@ enum CourseTaken {
   DOCTOR_OF_PHILOSOPHY = "DOCTOR_OF_PHILOSOPHY",
 }
 
-enum ConsultStage {
+export enum ConsultStage {
   BILLING = "BILLING",
   CONSULTING = "CONSULTING",
   CLOSED = "CLOSED",
 }
 
-enum InvoiceStatus {
-  PENDING = "PENDING",
-  PAID = "PAID",
-  OVERDUE = "OVERDUE",
-}
-
-enum Methodology {
+export enum Methodology {
   QUANTITATIVE = "QUANTITATIVE",
   QUALITATIVE = "QUALITATIVE",
   MIXED_METHODS = "MIXED_METHODS",
@@ -40,140 +38,270 @@ enum Methodology {
   OTHER = "OTHER",
 }
 
-interface IDiscussionItem extends Document {
-  page?: number;
-  text: string;
-  x?: number;
-  y?: number;
-  width?: number;
-  height?: number;
-  author: string;
-  timestamp: Date;
+enum InvoiceStatus {
+  PENDING = "PENDING",
+  PAID = "PAID",
+  OVERDUE = "OVERDUE",
 }
 
-const DiscussionItemSchema = new Schema<IDiscussionItem>({
-  page: Number,
-  text: { type: String, required: true },
-  x: Number,
-  y: Number,
-  width: Number,
-  height: Number,
-  author: { type: String, required: true },
-  timestamp: { type: Date, default: Date.now },
-});
+/* ============================================
+ BASIC STRUCTURES
+============================================ */
 
-interface IInvoice extends Document {
+interface IRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+interface IAuthor {
+  id: string;
+  name: string;
+  email: string;
+  color: string;
+}
+
+interface IAnnotation {
+  id: string;
+  page: number;
+  rect: IRect;
+  text: string;
+  author: IAuthor;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+interface ILiveSession {
+  isActive: boolean;
+  currentPage?: number;
+  activeAnnotationId?: string;
+}
+
+interface IInvoice {
   amount: number;
   status: InvoiceStatus;
   dueDate: Date;
   issuedAt: Date;
 }
 
+/* ============================================
+ SCHEMAS
+============================================ */
+
+const RectSchema = new Schema<IRect>({
+  x: Number,
+  y: Number,
+  width: Number,
+  height: Number,
+});
+
+const AuthorSchema = new Schema<IAuthor>({
+  id: String,
+  name: String,
+  email: String,
+  color: { type: String, required: true },
+});
+
+const AnnotationSchema = new Schema<IAnnotation>({
+  id: {
+    type: String,
+    default: () => new mongoose.Types.ObjectId().toString(),
+  },
+  page: { type: Number, required: true },
+  rect: { type: RectSchema, required: true },
+  text: { type: String, required: true },
+  author: { type: AuthorSchema, required: true },
+  createdAt: {
+    type: String,
+    default: () => new Date().toISOString(),
+  },
+  updatedAt: String,
+});
+
+const LiveSessionSchema = new Schema<ILiveSession>({
+  isActive: { type: Boolean, default: false },
+  currentPage: Number,
+  activeAnnotationId: String,
+});
+
 const InvoiceSchema = new Schema<IInvoice>({
-  amount: { type: Number, required: true },
+  amount: Number,
   status: {
     type: String,
     enum: Object.values(InvoiceStatus),
     default: InvoiceStatus.PENDING,
   },
-  dueDate: { type: Date, required: true },
+  dueDate: Date,
   issuedAt: { type: Date, default: Date.now },
 });
 
-interface IUploadItem extends Document {
-  id: string;
-  url: string;
-  discussion: IDiscussionItem[];
-  description: string;
-  createdAt: Date;
-  activeDiscussion?: string;
+/* ============================================
+ METHODS TYPES
+============================================ */
+
+interface IConsultationMethods {
+  addAnnotation(data: Partial<IAnnotation>): IAnnotation;
+  updateAnnotation(
+    id: string,
+    updates: Partial<IAnnotation>,
+  ): IAnnotation | null;
+  deleteAnnotation(id: string): boolean;
 }
 
-const UploadItemSchema = new Schema<IUploadItem>({
-  id: { type: String, required: true },
-  url: { type: String, required: true },
-  discussion: { type: [DiscussionItemSchema], default: [] },
-  description: {
-    type: String,
-    default:
-      "Project-related PDF file containing documentation, reports, or specifications.",
-  },
-  createdAt: { type: Date, default: Date.now },
-  activeDiscussion: { type: String, default: "" },
-});
+/* ============================================
+ MAIN DOCUMENT
+============================================ */
 
-interface IConsultation extends Document {
+export interface IConsultation extends Document, IConsultationMethods {
+  title: string;
   studentName: string;
+
   program: CourseTaken;
-  level: string;
-  status: ConsultStage;
+  level?: string;
+
   studyStage: StudyStage;
   methodology?: Methodology;
-  consultMembers: mongoose.Types.ObjectId[];
+  status: ConsultStage;
+
+  sessionId: string;
+  url?: string;
+
   createdBy: mongoose.Types.ObjectId;
+
+  externalParticipants: IAuthor[];
+
+  annotations: IAnnotation[];
+  annotationCount: number;
+
+  liveSession?: ILiveSession;
+
   invoices: IInvoice[];
-  uploads: IUploadItem[];
-  createdAt: Date;
-  updatedAt: Date;
+
+  createdAt: string;
+  updatedAt?: string;
 }
+
+/* ============================================
+ SCHEMA
+============================================ */
 
 const ConsultationSchema = new Schema<IConsultation>(
   {
+    title: { type: String, required: true },
     studentName: { type: String, required: true },
-    program: {
-      type: String,
-      enum: Object.values(CourseTaken),
-      required: true,
-    },
-    level: { type: String, default: "" },
-    status: {
-      type: String,
-      enum: Object.values(ConsultStage),
-      required: true,
-    },
-    studyStage: {
-      type: String,
-      enum: Object.values(StudyStage),
-      required: true,
-    },
-    methodology: {
-      type: String,
-      enum: Object.values(Methodology),
-    },
-    consultMembers: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "User",
+
+    program: { type: String, enum: Object.values(CourseTaken) },
+    level: String,
+
+    studyStage: { type: String, enum: Object.values(StudyStage) },
+    methodology: { type: String, enum: Object.values(Methodology) },
+
+    status: { type: String, enum: Object.values(ConsultStage) },
+
+    sessionId: { type: String, required: true },
+    url: String,
+
+    createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+
+    externalParticipants: {
+      type: [AuthorSchema],
+      validate: {
+        validator: (val: IAuthor[]) => val.length <= 3,
+        message: "Maximum of 3 external participants allowed",
       },
-    ],
-    createdBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
+      default: [],
     },
+
+    annotations: [AnnotationSchema],
+    annotationCount: { type: Number, default: 0 },
+
+    liveSession: LiveSessionSchema,
+
     invoices: [InvoiceSchema],
-    uploads: [UploadItemSchema],
+
+    createdAt: {
+      type: String,
+      default: () => new Date().toISOString(),
+    },
+    updatedAt: String,
   },
-  { timestamps: true },
+  {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  },
 );
 
-UploadItemSchema.set("toJSON", {
-  virtuals: true,
-  transform: function (doc, ret) {
-    ret.id = ret._id?.toString() || ret.id;
-    // Use delete with optional chaining or reassign instead
-    delete (ret as any)._id;
-    delete (ret as any).__v;
-    // Convert createdAt to ISO string but keep it as a string in the output
-    if (ret.createdAt) {
-      ret.createdAt = ret.createdAt.toISOString() as any;
-    }
-  },
-});
+/* ============================================
+ METHODS IMPLEMENTATION (SAFE)
+============================================ */
 
-const Consultation = mongoose.model<IConsultation>(
+ConsultationSchema.methods.addAnnotation = function (
+  this: IConsultation,
+  data: Partial<IAnnotation>,
+): IAnnotation {
+  if (!data.page || !data.rect || !data.text || !data.author) {
+    throw new Error("Invalid annotation payload");
+  }
+
+  const annotation: IAnnotation = {
+    id: new mongoose.Types.ObjectId().toString(),
+    page: data.page,
+    rect: data.rect,
+    text: data.text,
+    author: data.author,
+    createdAt: new Date().toISOString(),
+    updatedAt: undefined,
+  };
+
+  this.annotations.push(annotation);
+  this.annotationCount = this.annotations.length;
+
+  return annotation;
+};
+
+ConsultationSchema.methods.updateAnnotation = function (
+  this: IConsultation,
+  id: string,
+  updates: Partial<IAnnotation>,
+): IAnnotation | null {
+  const ann = this.annotations.find((a: IAnnotation) => a.id === id);
+
+  if (!ann) return null;
+
+  Object.assign(ann, updates);
+  ann.updatedAt = new Date().toISOString();
+
+  return ann;
+};
+
+ConsultationSchema.methods.deleteAnnotation = function (
+  this: IConsultation,
+  id: string,
+): boolean {
+  const index = this.annotations.findIndex((a: IAnnotation) => a.id === id);
+
+  if (index === -1) return false;
+
+  this.annotations.splice(index, 1);
+  this.annotationCount = this.annotations.length;
+
+  return true;
+};
+
+/* ============================================
+ INDEXES
+============================================ */
+
+ConsultationSchema.index({ sessionId: 1 });
+ConsultationSchema.index({ createdBy: 1 });
+ConsultationSchema.index({ status: 1 });
+
+/* ============================================
+ MODEL
+============================================ */
+
+export default mongoose.model<IConsultation>(
   "Consultation",
   ConsultationSchema,
 );
-
-export default Consultation;

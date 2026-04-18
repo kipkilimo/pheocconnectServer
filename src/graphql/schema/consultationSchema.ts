@@ -3,6 +3,10 @@ import { gql } from "graphql-tag";
 export const consultationTypeDefs = gql`
   scalar DateTime
 
+  # ============================================
+  # ENUMS
+  # ============================================
+
   enum StudyStage {
     CONCEPTUALIZATION
     PROPOSAL_DEVELOPMENT
@@ -43,19 +47,51 @@ export const consultationTypeDefs = gql`
     OTHER
   }
 
-  type DiscussionItem {
-    id: ID!
-    page: Int
-    title: String
-    text: String!
-    x: Float
-    y: Float
-    width: Float
-    height: Float
-    author: String!
-    timestamp: DateTime!
-    editedAt: DateTime
+  # ============================================
+  # CORE STRUCTURES
+  # ============================================
+
+  type ConsultationRect {
+    x: Float!
+    y: Float!
+    width: Float!
+    height: Float!
   }
+
+  type Author {
+    id: ID!
+    name: String!
+    email: String!
+    color: String!
+  }
+
+  # ============================================
+  # REVIEWER COMMENTS (RENAMED FROM PaperAnnotation)
+  # ============================================
+
+  type ReviewerComment {
+    id: ID!
+    page: Int!
+    rect: ConsultationRect!
+    text: String!
+    author: Author!
+    createdAt: DateTime!
+    updatedAt: DateTime
+  }
+
+  # ============================================
+  # LIVE SESSION
+  # ============================================
+
+  type LiveSession {
+    isActive: Boolean!
+    currentPage: Int
+    activeReviewerCommentId: String
+  }
+
+  # ============================================
+  # INVOICES
+  # ============================================
 
   type Invoice {
     amount: Float!
@@ -64,35 +100,75 @@ export const consultationTypeDefs = gql`
     issuedAt: DateTime!
   }
 
-  type Upload {
-    id: ID!
-    url: String!
-    description: String
-    discussion: [DiscussionItem!]!
-    activeDiscussion: String
-    createdAt: DateTime!
-    updatedAt: DateTime!
-  }
+  # ============================================
+  # MAIN CONSULTATION
+  # ============================================
 
   type Consultation {
     id: ID!
+    title: String!
     studentName: String!
+
     program: CourseTaken!
-    level: String!
-    status: ConsultStage!
+    level: String
+
     studyStage: StudyStage!
     methodology: Methodology
-    consultMembers: [User!]! # Add ! to indicate non-null array items
-    createdBy: User! # Add ! to indicate non-null
-    invoices: [Invoice]!
-    uploads: [Upload]!
+    status: ConsultStage!
+
+    sessionId: String!
+    url: String
+
+    createdBy: User!
+
+    externalParticipants: [Author!]!
+
+    reviewerComments: [ReviewerComment!]!
+    annotationCount: Int!
+
+    liveSession: LiveSession
+
+    invoices: [Invoice!]!
+
     createdAt: DateTime!
-    updatedAt: DateTime!
+    updatedAt: DateTime
   }
 
-  type Query {
-    getConsultation(id: ID!): Consultation
-    getConsultations(id: ID!): [Consultation]!
+  # =========================
+  # CORE TYPE
+  # =========================
+
+  # =========================
+  # INPUTS
+  # =========================
+
+  input RegisterConsultSessionInput {
+    sessionId: String!
+    email: String!
+  }
+  # ============================================
+  # INPUTS
+  # ============================================
+
+  input ConsultationRectInput {
+    x: Float!
+    y: Float!
+    width: Float!
+    height: Float!
+  }
+
+  input AuthorInput {
+    id: ID!
+    name: String!
+    email: String!
+    color: String!
+  }
+
+  input ReviewerCommentInput {
+    page: Int!
+    rect: ConsultationRectInput!
+    text: String!
+    author: AuthorInput!
   }
 
   input InvoiceInput {
@@ -101,65 +177,74 @@ export const consultationTypeDefs = gql`
     dueDate: DateTime!
   }
 
-  input UploadInput {
-    id: ID!
-    url: String!
-    discussion: [DiscussionItemInput]!
-    description: String!
-    activeDiscussion: String
-  }
-
   input CreateConsultationInput {
+    title: String!
     studentName: String!
     createdBy: ID!
+
     program: CourseTaken!
     level: String
+
     studyStage: StudyStage!
     status: ConsultStage!
     methodology: Methodology
-    invoices: [InvoiceInput]
-    uploads: [UploadInput]
+
+    sessionId: String!
+    url: String
+
+    externalParticipants: [AuthorInput!]
+    invoices: [InvoiceInput!]
   }
 
-  input AdminUpdateInput {
+  input UpdateConsultationInput {
+    title: String
     studentName: String
     program: CourseTaken
     level: String
     studyStage: StudyStage
     methodology: Methodology
-    consultMembers: [ID]
-    invoices: [InvoiceInput]
-    uploads: [UploadInput]
+    status: ConsultStage
+    url: String
+    externalParticipants: [AuthorInput!]
   }
 
-  type MigrationResult {
-    message: String!
-    migratedCount: Int!
+  # ============================================
+  # QUERIES
+  # ============================================
+
+  type Query {
+    getConsultationBySessionId(sessionId: String!): Consultation
+
+    getConsultation(id: ID!): Consultation
+    getConsultations: [Consultation!]!
   }
-  input DiscussionItemInput {
-    consultationId: String!
-    uploadId: String!
-    page: Int
-    text: String!
-    x: Float
-    y: Float
-    width: Float
-    height: Float
-    author: String!
-    timestamp: DateTime!
-  }
+  # ============================================
+  # MUTATIONS
+  # ============================================
 
   type Mutation {
     createConsultation(input: CreateConsultationInput!): Consultation!
-    updateConsultation(id: ID!, studyStage: StudyStage): Consultation!
-    migrateDiscussions: MigrationResult
+
+    updateConsultation(id: ID!, input: UpdateConsultationInput!): Consultation!
+
     deleteConsultation(id: ID!): Boolean!
-    deleteAllConsultations: Boolean!
-    addConsultationDiscussion(
-      discussionItem: DiscussionItemInput!
-    ): Consultation
-    adminUpdateConsultation(id: ID!, studyStage: StudyStage!): Consultation!
-    tutorUpdateStudyStage(id: ID!, studyStage: StudyStage!): Consultation!
+    # register user/session into consultation flow
+    registerForConsultingSession(
+      input: RegisterConsultSessionInput!
+    ): Consultation!
+    # Reviewer comment actions
+    addReviewerComment(
+      consultationId: ID!
+      input: ReviewerCommentInput!
+    ): ReviewerComment!
+
+    updateReviewerComment(
+      consultationId: ID!
+      reviewerCommentId: ID!
+      input: ReviewerCommentInput!
+    ): ReviewerComment!
+
+    deleteReviewerComment(consultationId: ID!, reviewerCommentId: ID!): Boolean!
   }
 `;
 

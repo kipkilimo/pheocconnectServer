@@ -586,258 +586,258 @@ const resolvers = {
       }
     },
     // Consultation paments
-    async consultationPaymentViaMpesa(
-      _: unknown,
-      args: {
-        userId: string;
-        consultationId: string;
-        paidAmount: string;
-        paymentPhoneNumber: string;
-      },
-      context: Context,
-    ): Promise<Payment> {
-      try {
-        // 1. Validate user and consultation
-        const [payingUser, consultation] = await Promise.all([
-          User.findById(args.userId),
-          Consultation.findById(args.consultationId),
-        ]);
+    // async consultationPaymentViaMpesa(
+    //   _: unknown,
+    //   args: {
+    //     userId: string;
+    //     consultationId: string;
+    //     paidAmount: string;
+    //     paymentPhoneNumber: string;
+    //   },
+    //   context: Context,
+    // ): Promise<Payment> {
+    //   try {
+    //     // 1. Validate user and consultation
+    //     const [payingUser, consultation] = await Promise.all([
+    //       User.findById(args.userId),
+    //       Consultation.findById(args.consultationId),
+    //     ]);
 
-        if (!payingUser) throw new Error("User not found");
-        if (!consultation) throw new Error("Consultation not found");
-        if (consultation.invoices.length === 0)
-          throw new Error("No invoice found");
+    //     if (!payingUser) throw new Error("User not found");
+    //     if (!consultation) throw new Error("Consultation not found");
+    //     if (consultation.invoices.length === 0)
+    //       throw new Error("No invoice found");
 
-        const paidAmount = Number(args.paidAmount);
-        const paymentAccount = `${payingUser.personalInfo.fullName} NEMBio Consultation Payment`;
+    //     const paidAmount = Number(args.paidAmount);
+    //     const paymentAccount = `${payingUser.personalInfo.fullName} NEMBio Consultation Payment`;
 
-        // 2. Initialize MPESA payment
-        const mpesaApi = new Mpesa({
-          consumerKey: process.env.MPESA_CONSUMER_KEY!,
-          consumerSecret: process.env.MPESA_CONSUMER_SECRET!,
-          //@ts-ignore
-          environment: "production",
-          shortCode: "4073131",
-          initiatorName: "Consultation Payment",
-          lipaNaMpesaShortCode: "4073131",
-          lipaNaMpesaShortPass: process.env.MPESA_PAYMENT_PASSKEY!,
-          securityCredential: process.env.MPESA_SECURITY_CREDENTIAL!,
-        });
+    //     // 2. Initialize MPESA payment
+    //     const mpesaApi = new Mpesa({
+    //       consumerKey: process.env.MPESA_CONSUMER_KEY!,
+    //       consumerSecret: process.env.MPESA_CONSUMER_SECRET!,
+    //       //@ts-ignore
+    //       environment: "production",
+    //       shortCode: "4073131",
+    //       initiatorName: "Consultation Payment",
+    //       lipaNaMpesaShortCode: "4073131",
+    //       lipaNaMpesaShortPass: process.env.MPESA_PAYMENT_PASSKEY!,
+    //       securityCredential: process.env.MPESA_SECURITY_CREDENTIAL!,
+    //     });
 
-        // Payment initiation
-        const paymentObjectBody = await mpesaApi.lipaNaMpesaOnline(
-          args.paymentPhoneNumber,
-          paidAmount,
-          "https://nembio.com/success",
-          paymentAccount,
-        );
+    //     // Payment initiation
+    //     const paymentObjectBody = await mpesaApi.lipaNaMpesaOnline(
+    //       args.paymentPhoneNumber,
+    //       paidAmount,
+    //       "https://nembio.com/success",
+    //       paymentAccount,
+    //     );
 
-        const delay = (ms: number) =>
-          new Promise((resolve) => setTimeout(resolve, ms));
+    //     const delay = (ms: number) =>
+    //       new Promise((resolve) => setTimeout(resolve, ms));
 
-        const delayedLogic = async (): Promise<Payment> => {
-          await delay(18000);
-          const paymentResponse = await mpesaApi.lipaNaMpesaQuery(
-            paymentObjectBody.data.CheckoutRequestID,
-          );
+    //     const delayedLogic = async (): Promise<Payment> => {
+    //       await delay(18000);
+    //       const paymentResponse = await mpesaApi.lipaNaMpesaQuery(
+    //         paymentObjectBody.data.CheckoutRequestID,
+    //       );
 
-          if (paymentResponse.data.ResultCode !== "0") {
-            throw new Error("Payment did not complete successfully.");
-          }
+    //       if (paymentResponse.data.ResultCode !== "0") {
+    //         throw new Error("Payment did not complete successfully.");
+    //       }
 
-          const newPayment = new Payment({
-            userId: args.userId,
-            consultationId: args.consultationId,
-            paidAmount,
-            paymentPhoneNumber: args.paymentPhoneNumber,
-            departmentId: "CONSULTATION",
-            transactionEntity: payingUser.personalInfo.fullName,
-            transactionReferenceNumber: generateUniqueCode(12).toUpperCase(),
-            paymentMethod: "MPESA",
-            createdAt: DateTime.now().toISO(),
-          });
+    //       const newPayment = new Payment({
+    //         userId: args.userId,
+    //         consultationId: args.consultationId,
+    //         paidAmount,
+    //         paymentPhoneNumber: args.paymentPhoneNumber,
+    //         departmentId: "CONSULTATION",
+    //         transactionEntity: payingUser.personalInfo.fullName,
+    //         transactionReferenceNumber: generateUniqueCode(12).toUpperCase(),
+    //         paymentMethod: "MPESA",
+    //         createdAt: DateTime.now().toISO(),
+    //       });
 
-          return await newPayment.save();
-        };
+    //       return await newPayment.save();
+    //     };
 
-        const result = await delayedLogic();
+    //     const result = await delayedLogic();
 
-        // Update consultation status if payment was successful
+    //     // Update consultation status if payment was successful
 
-        // Update invoice status to PAID
-        // @ts-ignore
-        consultation.invoices[0].status = "PAID";
+    //     // Update invoice status to PAID
+    //     // @ts-ignore
+    //     consultation.invoices[0].status = "PAID";
 
-        // Get all mentors (users with role MENTOR)
-        const mentors = await User.find({ role: "MENTOR" }).select("id");
+    //     // Get all mentors (users with role MENTOR)
+    //     const mentors = await User.find({ role: "MENTOR" }).select("id");
 
-        // Get all consultations that are not CLOSED and have PAID invoices
-        const activeConsultations = await Consultation.find({
-          status: { $ne: "CLOSED" },
-          "invoices.status": "PAID",
-        });
+    //     // Get all consultations that are not CLOSED and have PAID invoices
+    //     const activeConsultations = await Consultation.find({
+    //       status: { $ne: "CLOSED" },
+    //       "invoices.status": "PAID",
+    //     });
 
-        // Calculate mentor involvement (how many consultations each mentor is involved in)
-        const mentorInvolvement = new Map<string, number>();
+    //     // Calculate mentor involvement (how many consultations each mentor is involved in)
+    //     const mentorInvolvement = new Map<string, number>();
 
-        // Initialize all mentors with 0 involvement
-        mentors.forEach((mentor) => {
-          mentorInvolvement.set(mentor.id.toString(), 0);
-        });
+    //     // Initialize all mentors with 0 involvement
+    //     mentors.forEach((mentor) => {
+    //       mentorInvolvement.set(mentor.id.toString(), 0);
+    //     });
 
-        // Count each mentor's involvement in active consultations
-        activeConsultations.forEach((consult) => {
-          consult.consultMembers.forEach((member) => {
-            const memberId = member.id.toString();
-            if (mentorInvolvement.has(memberId)) {
-              mentorInvolvement.set(
-                memberId,
-                mentorInvolvement.get(memberId)! + 1,
-              );
-            }
-          });
-        });
+    //     // Count each mentor's involvement in active consultations
+    //     activeConsultations.forEach((consult) => {
+    //       consult.consultMembers.forEach((member) => {
+    //         const memberId = member.id.toString();
+    //         if (mentorInvolvement.has(memberId)) {
+    //           mentorInvolvement.set(
+    //             memberId,
+    //             mentorInvolvement.get(memberId)! + 1,
+    //           );
+    //         }
+    //       });
+    //     });
 
-        // Convert to array and sort by least involved
-        const sortedMentors = Array.from(mentorInvolvement.entries()).sort(
-          (a, b) => a[1] - b[1],
-        );
+    //     // Convert to array and sort by least involved
+    //     const sortedMentors = Array.from(mentorInvolvement.entries()).sort(
+    //       (a, b) => a[1] - b[1],
+    //     );
 
-        // Select 1-2 least involved mentors who are not already in this consultation
-        const currentMemberIds = consultation.consultMembers.map((m) =>
-          m.id.toString(),
-        );
-        const availableMentors = sortedMentors.filter(
-          ([mentorId]) => !currentMemberIds.includes(mentorId),
-        );
+    //     // Select 1-2 least involved mentors who are not already in this consultation
+    //     const currentMemberIds = consultation.consultMembers.map((m) =>
+    //       m.id.toString(),
+    //     );
+    //     const availableMentors = sortedMentors.filter(
+    //       ([mentorId]) => !currentMemberIds.includes(mentorId),
+    //     );
 
-        // Determine how many mentors to add (1 or 2)
-        const mentorsToAddCount = Math.min(availableMentors.length, 2);
-        const mentorsToAdd = availableMentors.slice(0, mentorsToAddCount);
+    //     // Determine how many mentors to add (1 or 2)
+    //     const mentorsToAddCount = Math.min(availableMentors.length, 2);
+    //     const mentorsToAdd = availableMentors.slice(0, mentorsToAddCount);
 
-        // Add selected mentors to consultation
-        for (const [mentorId] of mentorsToAdd) {
-          const mentor = await User.findById(mentorId);
-          if (mentor) {
-            consultation.consultMembers.push(mentor.id);
-          }
-        }
+    //     // Add selected mentors to consultation
+    //     for (const [mentorId] of mentorsToAdd) {
+    //       const mentor = await User.findById(mentorId);
+    //       if (mentor) {
+    //         consultation.consultMembers.push(mentor.id);
+    //       }
+    //     }
 
-        // Update consultation status to CONSULTING
-        // @ts-ignore
-        consultation.status = "CONSULTING";
-        consultation.updatedAt = new Date(Date.now());
+    //     // Update consultation status to CONSULTING
+    //     // @ts-ignore
+    //     consultation.status = "CONSULTING";
+    //     consultation.updatedAt = new Date(Date.now());
 
-        await consultation.save();
+    //     await consultation.save();
 
-        return result;
-      } catch (error) {
-        console.error(`Error in consultationPaymentViaMpesa: ${error}`);
-        throw new Error(`MPESA Payment failed: ${error}`);
-      }
-    },
-    async consultationPaymentViaPaypal(
-      _: any,
-      { userId, consultationId, transactionReferenceNumber, paidAmount }: any,
-    ) {
-      try {
-        // 1. Validate user and consultation
-        const [user, consultation] = await Promise.all([
-          User.findById(userId).select("personalInfo role"),
-          Consultation.findById(consultationId),
-        ]);
+    //     return result;
+    //   } catch (error) {
+    //     console.error(`Error in consultationPaymentViaMpesa: ${error}`);
+    //     throw new Error(`MPESA Payment failed: ${error}`);
+    //   }
+    // },
+    // async consultationPaymentViaPaypal(
+    //   _: any,
+    //   { userId, consultationId, transactionReferenceNumber, paidAmount }: any,
+    // ) {
+    //   try {
+    //     // 1. Validate user and consultation
+    //     const [user, consultation] = await Promise.all([
+    //       User.findById(userId).select("personalInfo role"),
+    //       Consultation.findById(consultationId),
+    //     ]);
 
-        if (!user) throw new Error("User not found");
-        if (!consultation) throw new Error("Consultation not found");
-        if (consultation.invoices.length === 0)
-          throw new Error("No invoice found");
+    //     if (!user) throw new Error("User not found");
+    //     if (!consultation) throw new Error("Consultation not found");
+    //     if (consultation.invoices.length === 0)
+    //       throw new Error("No invoice found");
 
-        // 2. Create payment record
-        const newPayment = new Payment({
-          userId,
-          consultationId,
-          paidAmount,
-          transactionReferenceNumber,
-          departmentId: "CONSULTATION",
-          transactionEntity: user.personalInfo.fullName,
-          paymentMethod: "PAYPAL",
-          createdAt: DateTime.now().toISO(),
-        });
+    //     // 2. Create payment record
+    //     const newPayment = new Payment({
+    //       userId,
+    //       consultationId,
+    //       paidAmount,
+    //       transactionReferenceNumber,
+    //       departmentId: "CONSULTATION",
+    //       transactionEntity: user.personalInfo.fullName,
+    //       paymentMethod: "PAYPAL",
+    //       createdAt: DateTime.now().toISO(),
+    //     });
 
-        await newPayment.save();
+    //     await newPayment.save();
 
-        // Update invoice status to PAID
-        // @ts-ignore
-        consultation.invoices[0].status = "PAID";
+    //     // Update invoice status to PAID
+    //     // @ts-ignore
+    //     consultation.invoices[0].status = "PAID";
 
-        // Get all mentors (users with role MENTOR)
-        const mentors = await User.find({ role: "MENTOR" }).select("id");
+    //     // Get all mentors (users with role MENTOR)
+    //     const mentors = await User.find({ role: "MENTOR" }).select("id");
 
-        // Get all consultations that are not CLOSED and have PAID invoices
-        const activeConsultations = await Consultation.find({
-          status: { $ne: "CLOSED" },
-          "invoices.status": "PAID",
-        });
+    //     // Get all consultations that are not CLOSED and have PAID invoices
+    //     const activeConsultations = await Consultation.find({
+    //       status: { $ne: "CLOSED" },
+    //       "invoices.status": "PAID",
+    //     });
 
-        // Calculate mentor involvement (how many consultations each mentor is involved in)
-        const mentorInvolvement = new Map<string, number>();
+    //     // Calculate mentor involvement (how many consultations each mentor is involved in)
+    //     const mentorInvolvement = new Map<string, number>();
 
-        // Initialize all mentors with 0 involvement
-        mentors.forEach((mentor) => {
-          mentorInvolvement.set(mentor.id.toString(), 0);
-        });
+    //     // Initialize all mentors with 0 involvement
+    //     mentors.forEach((mentor) => {
+    //       mentorInvolvement.set(mentor.id.toString(), 0);
+    //     });
 
-        // Count each mentor's involvement in active consultations
-        activeConsultations.forEach((consult) => {
-          consult.consultMembers.forEach((member) => {
-            const memberId = member.id.toString();
-            if (mentorInvolvement.has(memberId)) {
-              mentorInvolvement.set(
-                memberId,
-                mentorInvolvement.get(memberId)! + 1,
-              );
-            }
-          });
-        });
+    //     // Count each mentor's involvement in active consultations
+    //     activeConsultations.forEach((consult) => {
+    //       consult.consultMembers.forEach((member) => {
+    //         const memberId = member.id.toString();
+    //         if (mentorInvolvement.has(memberId)) {
+    //           mentorInvolvement.set(
+    //             memberId,
+    //             mentorInvolvement.get(memberId)! + 1,
+    //           );
+    //         }
+    //       });
+    //     });
 
-        // Convert to array and sort by least involved
-        const sortedMentors = Array.from(mentorInvolvement.entries()).sort(
-          (a, b) => a[1] - b[1],
-        );
+    //     // Convert to array and sort by least involved
+    //     const sortedMentors = Array.from(mentorInvolvement.entries()).sort(
+    //       (a, b) => a[1] - b[1],
+    //     );
 
-        // Select 1-2 least involved mentors who are not already in this consultation
-        const currentMemberIds = consultation.consultMembers.map((m) =>
-          m.id.toString(),
-        );
-        const availableMentors = sortedMentors.filter(
-          ([mentorId]) => !currentMemberIds.includes(mentorId),
-        );
+    //     // Select 1-2 least involved mentors who are not already in this consultation
+    //     const currentMemberIds = consultation.consultMembers.map((m) =>
+    //       m.id.toString(),
+    //     );
+    //     const availableMentors = sortedMentors.filter(
+    //       ([mentorId]) => !currentMemberIds.includes(mentorId),
+    //     );
 
-        // Determine how many mentors to add (1 or 2)
-        const mentorsToAddCount = Math.min(availableMentors.length, 2);
-        const mentorsToAdd = availableMentors.slice(0, mentorsToAddCount);
+    //     // Determine how many mentors to add (1 or 2)
+    //     const mentorsToAddCount = Math.min(availableMentors.length, 2);
+    //     const mentorsToAdd = availableMentors.slice(0, mentorsToAddCount);
 
-        // Add selected mentors to consultation
-        for (const [mentorId] of mentorsToAdd) {
-          const mentor = await User.findById(mentorId);
-          if (mentor) {
-            consultation.consultMembers.push(mentor.id);
-          }
-        }
+    //     // Add selected mentors to consultation
+    //     for (const [mentorId] of mentorsToAdd) {
+    //       const mentor = await User.findById(mentorId);
+    //       if (mentor) {
+    //         consultation.consultMembers.push(mentor.id);
+    //       }
+    //     }
 
-        // Update consultation status to CONSULTING
-        // @ts-ignore
-        consultation.status = "CONSULTING";
-        consultation.updatedAt = new Date(Date.now());
+    //     // Update consultation status to CONSULTING
+    //     // @ts-ignore
+    //     consultation.status = "CONSULTING";
+    //     consultation.updatedAt = new Date(Date.now());
 
-        await consultation.save();
+    //     await consultation.save();
 
-        return newPayment;
-      } catch (error) {
-        console.error(`Error in consultationPaymentViaPaypal: ${error}`);
-        throw new Error(`PayPal Payment failed: ${error}`);
-      }
-    },
+    //     return newPayment;
+    //   } catch (error) {
+    //     console.error(`Error in consultationPaymentViaPaypal: ${error}`);
+    //     throw new Error(`PayPal Payment failed: ${error}`);
+    //   }
+    // },
     // Helper method to check tutor availability
 
     // Premium access

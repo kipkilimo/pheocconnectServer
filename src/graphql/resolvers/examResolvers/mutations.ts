@@ -375,7 +375,7 @@ const examMutations = {
       }
     },
 
-    async registerForExamGroupSession(_: any, { input }: { input: any }) {
+    async registerForGroupTestSession(_: any, { input }: { input: any }) {
       try {
         const { sessionId, email, name, courseTaken, level } = input;
 
@@ -439,7 +439,7 @@ const examMutations = {
           sessionId: exam.sessionId,
         };
       } catch (error: any) {
-        console.error("Error in registerForExamGroupSession:", error);
+        console.error("Error in registerForGroupTestSession:", error);
         throw new Error(error.message || "Failed to register for session");
       }
     },
@@ -690,7 +690,7 @@ const examMutations = {
         const exam = await Exam.findById(examId);
         if (!exam) throw new Error("Exam not found");
 
-        const registrationUrl = `${process.env.FRONTEND_URL || "http://localhost:8000"}/join-session/${exam.sessionId}`;
+        const registrationUrl = `${process.env.CLIENT_SIDE_URL || "http://localhost:8000"}/join-session/${exam.sessionId}`;
         const qrCodePdf = await generateQRCodeDataUrl(registrationUrl);
 
         return {
@@ -720,7 +720,7 @@ const examMutations = {
         const creator = await User.findOne({ "personalInfo.email": email });
         if (!creator) throw new Error("Creator not found");
 
-        const registrationUrl = `${process.env.FRONTEND_URL || "http://localhost:8000"}/join-session/${exam.sessionId}`;
+        const registrationUrl = `${process.env.CLIENT_SIDE_URL || "http://localhost:8000"}/join-session/${exam.sessionId}`;
 
         return {
           success: true,
@@ -844,7 +844,7 @@ const examMutations = {
 
         const sessionId = generateUniqueCode(10);
         const accessKey = generateAccessKey();
-        const joinUrl = `${process.env.FRONTEND_URL || "http://localhost:8000"}/join-session/${sessionId}`;
+        const joinUrl = `${process.env.CLIENT_SIDE_URL || "http://localhost:8000"}/join-session/${sessionId}`;
 
         const exam = await Exam.create({
           title: cleanedTitle,

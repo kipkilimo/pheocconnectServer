@@ -435,7 +435,7 @@ export function generateExamAccessUrl(options: {
   });
 
   const encrypted = encryptData(payload);
-  const baseUrl = process.env.FRONTEND_URL || "http://localhost:8000";
+  const baseUrl = process.env.CLIENT_SIDE_URL || "http://localhost:8000";
 
   return `${baseUrl}/exam-access?token=${encodeURIComponent(encrypted)}`;
 }

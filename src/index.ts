@@ -23,6 +23,8 @@ import fileRoutes from "../src/routes/fileRoutes";
 import resourceUploaders from "../src/routes/resourceUploaders";
 import { s3Deleter } from "../src/utils/awsDeleter";
 import examTypeDefs from "./graphql/schema/examSchema";
+
+import { annotationTypeDefs } from "./graphql/schema/annotationsSchema";
 import questionTypeDefs from "./graphql/schema/questionSchema";
 import userTypeDefs from "./graphql/schema/userSchema";
 import paperTypeDefs from "./graphql/schema/paperSchema";
@@ -42,6 +44,8 @@ import vendorResolver from "./graphql/resolvers/vendorResolver";
 import paymentResolver from "./graphql/resolvers/paymentResolvers";
 import departmentResolver from "./graphql/resolvers/departmentResolvers";
 import discussionGroupResolver from "./graphql/resolvers/discussionGroupResolvers";
+import { annotationResolvers } from "./graphql/resolvers/annotationsResolvers";
+
 import connectDB from "../src/database/connection";
 import auth from "../src/middleware/auth";
 
@@ -128,12 +132,14 @@ const startServer = async () => {
       paymentTypeDefs,
       departmentTypeDefs,
       discussionGroupTypeDefs,
+      annotationTypeDefs,
     ],
     resolvers: [
       examResolver,
       questionResolver,
       userResolver,
       paperResolver,
+      annotationResolvers,
       resourceResolver,
       vendorResolver,
       consultationResolver,

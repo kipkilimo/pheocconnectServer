@@ -1,23 +1,32 @@
-// websocket/paperSocket.ts
 import { WebSocketServer, WebSocket } from "ws";
 import { IncomingMessage } from "http";
 import { URL } from "url";
+import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
-import Paper from "../models/Paper";
-import Annotation from "../models/Annotation";
+import Paper, {
+  IPaperRegistration,
+  IPaperAnnotation,
+  IPaperReaction,
+  PaperRegistrationStatusEnum,
+} from "../models/Paper";
 import User from "../models/User";
+
+// ============================================
+// TYPES
+// ============================================
 
 interface CustomWebSocket extends WebSocket {
   paperId?: string;
   userId?: string;
   user?: any;
+  registration?: any;
   isAlive: boolean;
 }
 
 interface WSMessage {
+  title: string;
   type: string;
   annotationId?: string;
-  annotation?: any;
   page?: number;
   rect?: any;
   text?: string;
@@ -25,531 +34,809 @@ interface WSMessage {
   currentPage?: number;
 }
 
-// Track connected clients per paper
+// ============================================
+// IN-MEMORY STORES
+// ============================================
+
+// Connected clients per paper
 const paperClients = new Map<string, Set<CustomWebSocket>>();
+
+// Session store
+const paperSessions = new Map<
+  string,
+  {
+    isActive: boolean;
+    controllerId: string;
+    currentPage: number;
+    participants: Set<string>;
+  }
+>();
+
+// ============================================
+// WS SERVER
+// ============================================
 
 export const paperWSS = new WebSocketServer({ noServer: true });
 console.log("✅ Paper WebSocket Server initialized");
 
 paperWSS.on("connection", (ws: CustomWebSocket, req: IncomingMessage) => {
-  console.log("🔗 Client connected");
   ws.isAlive = true;
 
-  // Parse URL for authentication
   try {
     const parsedUrl = new URL(req.url!, `http://${req.headers.host}`);
     const token = parsedUrl.searchParams.get("token");
     const paperId = parsedUrl.searchParams.get("paperId");
 
     if (!token || !paperId) {
-      console.error("❌ Missing token or paperId");
-      ws.close();
+      ws.close(1008, "Missing token or paperId");
       return;
     }
 
-    // Authenticate user
-    authenticateUser(token)
-      .then(async (user) => {
-        if (!user) {
-          ws.close();
+    authenticateWebSocketUser(token, paperId)
+      .then(async ({ user, registration, paper }) => {
+        if (!user || !registration) {
+          ws.close(1008, "Authentication failed");
           return;
         }
 
-        ws.userId = user._id.toString();
+        ws.userId = user.id.toString();
         ws.user = user;
+        ws.registration = registration;
         ws.paperId = paperId;
 
-        // Verify paper exists
-        const paper = await Paper.findById(paperId);
-        if (!paper) {
-          ws.close();
+        // Check if user is approved (registration status must be APPROVED)
+        const isApproved = registration.status === "APPROVED";
+        const isCreator = paper.createdBy.toString() === ws.userId;
+
+        // Only allow approved users or the creator
+        if (!isApproved && !isCreator) {
+          ws.send(
+            JSON.stringify({
+              type: "error",
+              message: "You are not approved to join this session",
+              code: "NOT_APPROVED",
+            }),
+          );
+          ws.close(1008, "Not approved");
           return;
         }
 
-        // Add to paper clients
+        // Check if token is still valid (not expired)
+        const isTokenValid = await validateTokenExpiration(registration, token);
+        if (!isTokenValid && !isCreator) {
+          ws.send(
+            JSON.stringify({
+              type: "error",
+              message:
+                "Your session token has expired. Please renew your access.",
+              code: "TOKEN_EXPIRED",
+              requiresRenewal: true,
+            }),
+          );
+          ws.close(1008, "Token expired");
+          return;
+        }
+
+        // Add to connected clients
         if (!paperClients.has(paperId)) {
           paperClients.set(paperId, new Set());
         }
         paperClients.get(paperId)!.add(ws);
 
-        // Send current annotations
+        // Send initial annotations
         await sendAnnotations(ws, paperId);
 
-        // Notify others
+        // Broadcast user joined
         broadcastToPaper(
           paperId,
           {
             type: "user_joined",
             userId: ws.userId,
+            userName: user.personalInfo?.fullName || registration.name,
+            emailAddress: registration.emailAddress,
+            registrationId: registration.id,
             timestamp: new Date().toISOString(),
           },
           ws,
         );
 
-        console.log(`✅ User ${ws.userId} joined paper ${paperId}`);
+        // If session is active, send current state
+        const session = paperSessions.get(paperId);
+        if (session && session.isActive) {
+          ws.send(
+            JSON.stringify({
+              type: "session_state",
+              currentPage: session.currentPage,
+              controllerId: session.controllerId,
+              isActive: session.isActive,
+              participantCount: session.participants.size,
+            }),
+          );
+        }
       })
       .catch((err) => {
-        console.error("❌ Authentication error:", err);
-        ws.close();
+        console.error("WebSocket authentication error:", err);
+        ws.close(1011, "Authentication error");
       });
   } catch (err) {
-    console.error("❌ Error parsing URL:", err);
-    ws.close();
+    console.error("WebSocket connection error:", err);
+    ws.close(1011, "Connection error");
   }
 
-  // Handle incoming messages
   ws.on("message", async (data: Buffer) => {
     try {
       const message: WSMessage = JSON.parse(data.toString());
       await handleMessage(ws, message);
     } catch (err) {
-      console.error("❌ Error parsing message:", err);
+      console.error("WS parse error:", err);
+      ws.send(
+        JSON.stringify({
+          type: "error",
+          message: "Invalid message format",
+        }),
+      );
     }
   });
 
-  // Handle pong for heartbeat
-  ws.on("pong", () => {
-    ws.isAlive = true;
-  });
+  ws.on("pong", () => (ws.isAlive = true));
 
-  // Handle close
   ws.on("close", () => {
-    console.log(`❌ Client disconnected: ${ws.userId}`);
     if (ws.paperId && paperClients.has(ws.paperId)) {
       paperClients.get(ws.paperId)!.delete(ws);
 
-      // Notify others
       broadcastToPaper(ws.paperId, {
         type: "user_left",
         userId: ws.userId,
+        userName: ws.user?.personalInfo?.fullName || ws.registration?.name,
         timestamp: new Date().toISOString(),
       });
 
-      // Clean up empty paper sets
       if (paperClients.get(ws.paperId)!.size === 0) {
         paperClients.delete(ws.paperId);
       }
     }
+
+    // Remove from session participants
+    if (ws.paperId && paperSessions.has(ws.paperId)) {
+      const session = paperSessions.get(ws.paperId)!;
+      session.participants.delete(ws.userId!);
+    }
   });
 });
 
-// Heartbeat interval
+// ============================================
+// HEARTBEAT
+// ============================================
+
 setInterval(() => {
   paperWSS.clients.forEach((ws: WebSocket) => {
-    const customWs = ws as CustomWebSocket;
-    if (customWs.isAlive === false) {
-      if (customWs.paperId && paperClients.has(customWs.paperId)) {
-        const clients = paperClients.get(customWs.paperId);
-        if (clients) {
-          clients.delete(customWs);
-          if (clients.size === 0) {
-            paperClients.delete(customWs.paperId);
-          }
-        }
-      }
-      return customWs.terminate();
+    const c = ws as CustomWebSocket;
+
+    if (!c.isAlive) {
+      return c.terminate();
     }
-    customWs.isAlive = false;
-    customWs.ping();
+
+    c.isAlive = false;
+    c.ping();
   });
 }, 30000);
 
-// Helper: Authenticate user from token
-async function authenticateUser(token: string) {
-  try {
-    const jwt = require("jsonwebtoken");
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "your-secret");
-    const user = await User.findById(decoded.userId);
-    return user;
-  } catch (error) {
-    console.error("Auth error:", error);
-    return null;
-  }
-}
+// ============================================
+// AUTHENTICATION HELPERS
+// ============================================
 
-// Helper: Send current annotations to a client
-async function sendAnnotations(ws: CustomWebSocket, paperId: string) {
+async function authenticateWebSocketUser(token: string, paperId: string) {
   try {
-    const annotations = await Annotation.find({ paperId })
-      .sort({ createdAt: -1 })
-      .limit(50)
-      .lean();
+    // Verify JWT token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret") as {
+      sessionId: string;
+      registrationId: string;
+      emailAddress: string;
+      paperId?: string;
+    };
 
-    ws.send(
-      JSON.stringify({
-        type: "annotations_init",
-        data: annotations.map((ann) => ({
-          id: ann._id,
-          page: ann.page,
-          rect: ann.rect,
-          text: ann.text,
-          author: ann.author,
-          createdAt: ann.createdAt,
-        })),
-      }),
+    // Find the paper
+    const paper = await Paper.findById(paperId);
+    if (!paper) {
+      throw new Error("Paper not found");
+    }
+
+    // Find registration by ID or emailAddress
+    const registration = paper.registrations?.find(
+      (r: IPaperRegistration) =>
+        r.id === decoded.registrationId ||
+        r.emailAddress === decoded.emailAddress,
     );
-  } catch (error) {
-    console.error("Error sending annotations:", error);
+
+    if (!registration) {
+      throw new Error("Registration not found");
+    }
+
+    // Verify that the token matches the last issued token
+    if (registration.lastToken && registration.lastToken !== token) {
+      throw new Error("Token mismatch - please renew your session");
+    }
+
+    // Find the user if they have an account
+    // User model uses personalInfo.email (lowercase) or email field
+    const user = await User.findOne({
+      $or: [
+        { "personalInfo.email": registration.emailAddress.toLowerCase() },
+        { email: registration.emailAddress.toLowerCase() },
+      ],
+    });
+
+    if (!user) {
+      // Create a temporary user object for email-only registrations
+      return {
+        user: {
+          id: registration.id,
+          emailAddress: registration.emailAddress,
+          personalInfo: {
+            fullName: registration.name,
+            email: registration.emailAddress,
+          },
+        },
+        registration,
+        paper,
+      };
+    }
+
+    return { user, registration, paper };
+  } catch (err) {
+    console.error("Authentication error:", err);
+    throw err;
   }
 }
 
-// Helper: Broadcast to all clients in a paper
+async function validateTokenExpiration(
+  registration: any,
+  token: string,
+): Promise<boolean> {
+  try {
+    // Verify JWT expiration
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret") as {
+      exp: number;
+    };
+
+    const currentTime = Math.floor(Date.now() / 1000);
+    const isValid = decoded.exp > currentTime;
+
+    // Also check if token was issued within reasonable timeframe (3 hours)
+    if (registration.lastTokenIssuedAt && isValid) {
+      const tokenAge =
+        Date.now() - new Date(registration.lastTokenIssuedAt).getTime();
+      const maxAge = 3 * 60 * 60 * 1000; // 3 hours
+      return tokenAge <= maxAge;
+    }
+
+    return isValid;
+  } catch (err) {
+    return false;
+  }
+}
+
+async function sendAnnotations(ws: CustomWebSocket, paperId: string) {
+  const paper = await Paper.findById(paperId);
+  if (!paper) return;
+
+  const annotations = paper.annotations || [];
+
+  ws.send(
+    JSON.stringify({
+      type: "annotations_init",
+      data: annotations.map((a: IPaperAnnotation) => ({
+        id: a.id,
+        page: a.page,
+        rect: a.rect,
+        title: a.title,
+        text: a.text,
+        author: a.author,
+        reactions: a.reactions,
+        createdAt: a.createdAt,
+        updatedAt: a.updatedAt,
+      })),
+    }),
+  );
+}
+
 function broadcastToPaper(
   paperId: string,
   message: any,
-  excludeWs?: CustomWebSocket,
+  exclude?: CustomWebSocket,
 ) {
   const clients = paperClients.get(paperId);
   if (!clients) return;
 
   const data = JSON.stringify(message);
-  clients.forEach((client: CustomWebSocket) => {
-    if (client.readyState === WebSocket.OPEN && client !== excludeWs) {
-      client.send(data);
+
+  clients.forEach((c) => {
+    if (c.readyState === WebSocket.OPEN && c !== exclude) {
+      c.send(data);
     }
   });
 }
 
-// Main message handler
-async function handleMessage(ws: CustomWebSocket, message: WSMessage) {
-  const { type } = message;
+// ============================================
+// TOKEN RENEWAL MUTATION (for GraphQL)
+// ============================================
 
-  switch (type) {
+export async function renewWebSocketToken(
+  registrationId: string,
+  paperId: string,
+) {
+  const paper = await Paper.findById(paperId);
+  if (!paper) throw new Error("Paper not found");
+
+  const registration = paper.registrations?.find(
+    (r: IPaperRegistration) => r.id === registrationId,
+  );
+  if (!registration) throw new Error("Registration not found");
+
+  if (registration.status !== PaperRegistrationStatusEnum.APPROVED) {
+    throw new Error("Only approved registrations can renew tokens");
+  }
+
+  // Generate new token
+  const newToken = jwt.sign(
+    {
+      sessionId: paper.sessionId,
+      registrationId: registration.id,
+      emailAddress: registration.emailAddress,
+      paperId: paper.id,
+    },
+    process.env.JWT_SECRET || "secret",
+    { expiresIn: "3h" },
+  );
+
+  // Update registration with new token info
+  registration.lastTokenIssuedAt = new Date();
+  registration.lastToken = newToken;
+  paper.updatedAt = new Date().toISOString();
+  await paper.save();
+
+  return {
+    success: true,
+    token: newToken,
+    expiresAt: new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString(),
+  };
+}
+
+// ============================================
+// MESSAGE ROUTER
+// ============================================
+
+async function handleMessage(ws: CustomWebSocket, msg: WSMessage) {
+  switch (msg.type) {
+    case "renew_token":
+      return handleRenewToken(ws);
     case "create_annotation":
-      await handleCreateAnnotation(ws, message);
-      break;
+      return handleCreateAnnotation(ws, msg);
     case "update_annotation":
-      await handleUpdateAnnotation(ws, message);
-      break;
+      return handleUpdateAnnotation(ws, msg);
     case "delete_annotation":
-      await handleDeleteAnnotation(ws, message);
-      break;
+      return handleDeleteAnnotation(ws, msg);
     case "add_reaction":
-      await handleAddReaction(ws, message);
-      break;
+      return handleAddReaction(ws, msg);
     case "remove_reaction":
-      await handleRemoveReaction(ws, message);
-      break;
+      return handleRemoveReaction(ws, msg);
     case "start_session":
-      await handleStartSession(ws, message);
-      break;
+      return handleStartSession(ws, msg);
     case "end_session":
-      await handleEndSession(ws, message);
-      break;
+      return handleEndSession(ws);
     case "navigate":
-      await handleNavigate(ws, message);
-      break;
+      return handleNavigate(ws, msg);
     case "join_session":
-      await handleJoinSession(ws, message);
-      break;
+      return handleJoinSession(ws);
     case "leave_session":
-      await handleLeaveSession(ws, message);
-      break;
-    case "ping":
-      ws.send(JSON.stringify({ type: "pong", timestamp: Date.now() }));
-      break;
+      return handleLeaveSession(ws);
+    case "get_participants":
+      return handleGetParticipants(ws);
     default:
-      console.log(`Unknown message type: ${type}`);
-  }
-}
-
-// ============================================
-// HANDLERS
-// ============================================
-
-async function handleCreateAnnotation(ws: CustomWebSocket, message: WSMessage) {
-  try {
-    const { page, rect, text } = message;
-
-    if (!page || !rect || !text) {
-      return;
-    }
-
-    const annotation = new Annotation({
-      paperId: ws.paperId,
-      page,
-      rect,
-      text,
-      author: {
-        id: ws.userId,
-        name:
-          ws.user?.personalInfo?.fullName || ws.user?.personalInfo?.username,
-        email: ws.user?.personalInfo?.email,
-      },
-      reactions: [],
-      createdAt: new Date().toISOString(),
-    });
-
-    await annotation.save();
-
-    // Update paper annotation count
-    await Paper.findByIdAndUpdate(ws.paperId, {
-      $inc: { annotationCount: 1 },
-    });
-
-    // Broadcast to all clients
-    broadcastToPaper(ws.paperId!, {
-      type: "annotation_created",
-      annotation: {
-        id: annotation._id,
-        page: annotation.page,
-        rect: annotation.rect,
-        text: annotation.text,
-        author: annotation.author,
-        createdAt: annotation.createdAt,
-      },
-    });
-  } catch (error) {
-    console.error("Error creating annotation:", error);
-  }
-}
-
-async function handleUpdateAnnotation(ws: CustomWebSocket, message: WSMessage) {
-  try {
-    const { annotationId, text } = message;
-
-    if (!annotationId || !text) return;
-
-    const annotation = await Annotation.findById(annotationId);
-
-    if (!annotation || annotation.author.id.toString() !== ws.userId) {
-      return;
-    }
-
-    annotation.text = text;
-    annotation.updatedAt = new Date().toISOString();
-    await annotation.save();
-
-    broadcastToPaper(ws.paperId!, {
-      type: "annotation_updated",
-      annotationId,
-      text,
-      updatedAt: annotation.updatedAt,
-    });
-  } catch (error) {
-    console.error("Error updating annotation:", error);
-  }
-}
-
-async function handleDeleteAnnotation(ws: CustomWebSocket, message: WSMessage) {
-  try {
-    const { annotationId } = message;
-
-    if (!annotationId) return;
-
-    const annotation = await Annotation.findById(annotationId);
-
-    if (!annotation || annotation.author.id.toString() !== ws.userId) {
-      return;
-    }
-
-    await annotation.deleteOne();
-
-    // Update paper
-    await Paper.findByIdAndUpdate(ws.paperId, {
-      $inc: { annotationCount: -1 },
-    });
-
-    broadcastToPaper(ws.paperId!, {
-      type: "annotation_deleted",
-      annotationId,
-    });
-  } catch (error) {
-    console.error("Error deleting annotation:", error);
-  }
-}
-
-async function handleAddReaction(ws: CustomWebSocket, message: WSMessage) {
-  try {
-    const { annotationId, reactionType } = message;
-
-    if (!annotationId || !reactionType) return;
-
-    const annotation = await Annotation.findById(annotationId);
-    if (!annotation) return;
-
-    const newReaction = {
-      type: reactionType,
-      author: {
-        id: ws.userId,
-        name:
-          ws.user?.personalInfo?.fullName || ws.user?.personalInfo?.username,
-      },
-      createdAt: new Date().toISOString(),
-    };
-
-    annotation.reactions.push(newReaction);
-    await annotation.save();
-
-    broadcastToPaper(ws.paperId!, {
-      type: "reaction_added",
-      annotationId,
-      reaction: newReaction,
-    });
-  } catch (error) {
-    console.error("Error adding reaction:", error);
-  }
-}
-
-async function handleRemoveReaction(ws: CustomWebSocket, message: WSMessage) {
-  try {
-    const { annotationId, reactionType } = message;
-
-    if (!annotationId || !reactionType) return;
-
-    const annotation = await Annotation.findById(annotationId);
-    if (!annotation) return;
-
-    annotation.reactions = annotation.reactions.filter(
-      (r: any) =>
-        !(r.author.id.toString() === ws.userId && r.type === reactionType),
-    );
-    await annotation.save();
-
-    broadcastToPaper(ws.paperId!, {
-      type: "reaction_removed",
-      annotationId,
-      reactionType,
-      userId: ws.userId,
-    });
-  } catch (error) {
-    console.error("Error removing reaction:", error);
-  }
-}
-
-async function handleStartSession(ws: CustomWebSocket, message: WSMessage) {
-  try {
-    const paper = await Paper.findById(ws.paperId);
-    if (!paper) return;
-
-    // Check if user is creator
-    if (paper.createdBy.toString() !== ws.userId) return;
-
-    paper.liveSession = {
-      isActive: true,
-      startedAt: new Date().toISOString(),
-      controllerId: new mongoose.Types.ObjectId(ws.userId),
-      currentPage: message.currentPage || 1,
-      participants: [new mongoose.Types.ObjectId(ws.userId)],
-    };
-
-    await paper.save();
-
-    broadcastToPaper(ws.paperId!, {
-      type: "session_started",
-      session: {
-        isActive: true,
-        currentPage: paper.liveSession.currentPage,
-        controllerId: ws.userId,
-      },
-    });
-  } catch (error) {
-    console.error("Error starting session:", error);
-  }
-}
-
-async function handleEndSession(ws: CustomWebSocket, message: WSMessage) {
-  try {
-    const paper = await Paper.findById(ws.paperId);
-    if (!paper || !paper.liveSession?.isActive) return;
-
-    if (
-      paper.liveSession.controllerId?.toString() !== ws.userId &&
-      paper.createdBy.toString() !== ws.userId
-    ) {
-      return;
-    }
-
-    paper.liveSession.isActive = false;
-    paper.liveSession.endedAt = new Date().toISOString();
-    await paper.save();
-
-    broadcastToPaper(ws.paperId!, {
-      type: "session_ended",
-      endedBy: ws.userId,
-    });
-  } catch (error) {
-    console.error("Error ending session:", error);
-  }
-}
-
-async function handleNavigate(ws: CustomWebSocket, message: WSMessage) {
-  try {
-    const { page } = message;
-    if (page === undefined) return;
-
-    const paper = await Paper.findById(ws.paperId);
-    if (!paper || !paper.liveSession?.isActive) return;
-
-    if (paper.liveSession.controllerId?.toString() !== ws.userId) return;
-
-    paper.liveSession.currentPage = page;
-    await paper.save();
-
-    broadcastToPaper(ws.paperId!, {
-      type: "navigation",
-      page,
-      controllerId: ws.userId,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error("Error navigating:", error);
-  }
-}
-
-async function handleJoinSession(ws: CustomWebSocket, message: WSMessage) {
-  try {
-    const paper = await Paper.findById(ws.paperId);
-    if (!paper || !paper.liveSession?.isActive) return;
-
-    if (
-      !paper.liveSession.participants?.some(
-        (p: any) => p.toString() === ws.userId,
-      )
-    ) {
-      if (!paper.liveSession.participants) paper.liveSession.participants = [];
-      paper.liveSession.participants.push(
-        new mongoose.Types.ObjectId(ws.userId),
+      ws.send(
+        JSON.stringify({
+          type: "error",
+          message: `Unknown message type: ${msg.type}`,
+        }),
       );
-      await paper.save();
+  }
+}
 
-      broadcastToPaper(ws.paperId!, {
-        type: "participant_joined",
-        userId: ws.userId,
-        participantCount: paper.liveSession.participants.length,
-      });
-    }
+// ============================================
+// TOKEN RENEWAL HANDLER
+// ============================================
+
+async function handleRenewToken(ws: CustomWebSocket) {
+  if (!ws.registration || !ws.paperId) {
+    ws.send(
+      JSON.stringify({
+        type: "error",
+        message: "Cannot renew token: missing registration info",
+      }),
+    );
+    return;
+  }
+
+  try {
+    const result = await renewWebSocketToken(ws.registration.id, ws.paperId);
 
     ws.send(
       JSON.stringify({
-        type: "session_state",
-        data: {
-          currentPage: paper.liveSession.currentPage,
-          controllerId: paper.liveSession.controllerId?.toString(),
-        },
+        type: "token_renewed",
+        token: result.token,
+        expiresAt: result.expiresAt,
       }),
     );
-  } catch (error) {
-    console.error("Error joining session:", error);
+
+    // Update the connection's stored token
+    ws.registration.lastToken = result.token;
+  } catch (err) {
+    ws.send(
+      JSON.stringify({
+        type: "error",
+        message: "Failed to renew token",
+      }),
+    );
   }
 }
 
-async function handleLeaveSession(ws: CustomWebSocket, message: WSMessage) {
-  try {
-    const paper = await Paper.findById(ws.paperId);
-    if (!paper || !paper.liveSession?.participants) return;
+// ============================================
+// ANNOTATIONS (using embedded Paper model)
+// ============================================
 
-    paper.liveSession.participants = paper.liveSession.participants.filter(
-      (p: any) => p.toString() !== ws.userId,
-    );
-    await paper.save();
+async function handleCreateAnnotation(ws: CustomWebSocket, msg: WSMessage) {
+  if (!msg.page || !msg.rect || !msg.text) return;
 
-    broadcastToPaper(ws.paperId!, {
-      type: "participant_left",
-      userId: ws.userId,
-      participantCount: paper.liveSession.participants.length,
-    });
-  } catch (error) {
-    console.error("Error leaving session:", error);
+  const paper = await Paper.findById(ws.paperId);
+  if (!paper) return;
+
+  // Ensure userId exists
+  if (!ws.userId) {
+    ws.send(JSON.stringify({ type: "error", message: "User ID not found" }));
+    return;
   }
+
+  const newAnnotation: IPaperAnnotation = {
+    id: new mongoose.Types.ObjectId().toString(),
+    page: msg.page,
+    rect: msg.rect,
+    title: msg.title || "PaperAnnotation",
+    text: msg.text,
+    author: {
+      id: ws.userId,
+      name:
+        ws.user?.personalInfo?.fullName || ws.registration?.name || "Anonymous",
+      emailAddress: ws.registration?.emailAddress || "",
+    },
+    reactions: [],
+    createdAt: new Date().toISOString(),
+  };
+
+  paper.annotations.push(newAnnotation);
+  paper.annotationCount = paper.annotations.length;
+  paper.updatedAt = new Date().toISOString();
+  await paper.save();
+
+  broadcastToPaper(ws.paperId!, {
+    type: "annotation_created",
+    annotation: newAnnotation,
+  });
+}
+
+async function handleUpdateAnnotation(ws: CustomWebSocket, msg: WSMessage) {
+  const paper = await Paper.findById(ws.paperId);
+  if (!paper) return;
+
+  const annotation = paper.annotations.find(
+    (a: IPaperAnnotation) => a.id === msg.annotationId,
+  );
+  if (!annotation || annotation.author.id !== ws.userId) return;
+
+  annotation.text = msg.text!;
+  annotation.updatedAt = new Date().toISOString();
+  paper.updatedAt = new Date().toISOString();
+  await paper.save();
+
+  broadcastToPaper(ws.paperId!, {
+    type: "annotation_updated",
+    annotationId: annotation.id,
+    text: annotation.text,
+    updatedAt: annotation.updatedAt,
+  });
+}
+
+async function handleDeleteAnnotation(ws: CustomWebSocket, msg: WSMessage) {
+  const paper = await Paper.findById(ws.paperId);
+  if (!paper) return;
+
+  const annotationIndex = paper.annotations.findIndex(
+    (a: IPaperAnnotation) => a.id === msg.annotationId,
+  );
+
+  if (annotationIndex === -1) return;
+
+  const annotation = paper.annotations[annotationIndex];
+  if (annotation.author.id !== ws.userId) return;
+
+  paper.annotations.splice(annotationIndex, 1);
+  paper.annotationCount = paper.annotations.length;
+  paper.updatedAt = new Date().toISOString();
+  await paper.save();
+
+  broadcastToPaper(ws.paperId!, {
+    type: "annotation_deleted",
+    annotationId: msg.annotationId,
+  });
+}
+
+// ============================================
+// REACTIONS
+// ============================================
+
+async function handleAddReaction(ws: CustomWebSocket, msg: WSMessage) {
+  const paper = await Paper.findById(ws.paperId);
+  if (!paper) return;
+
+  const annotation = paper.annotations.find(
+    (a: IPaperAnnotation) => a.id === msg.annotationId,
+  );
+  if (!annotation) return;
+
+  if (!ws.userId) {
+    ws.send(JSON.stringify({ type: "error", message: "User ID not found" }));
+    return;
+  }
+
+  const reaction: IPaperReaction = {
+    id: new mongoose.Types.ObjectId().toString(),
+    type: msg.reactionType!,
+    author: {
+      id: ws.userId,
+      name:
+        ws.user?.personalInfo?.fullName || ws.registration?.name || "Anonymous",
+      emailAddress: ws.registration?.emailAddress || "",
+    },
+    createdAt: new Date().toISOString(),
+  };
+
+  annotation.reactions.push(reaction);
+  paper.updatedAt = new Date().toISOString();
+  await paper.save();
+
+  broadcastToPaper(ws.paperId!, {
+    type: "reaction_added",
+    annotationId: annotation.id,
+    reaction: reaction,
+  });
+}
+
+async function handleRemoveReaction(ws: CustomWebSocket, msg: WSMessage) {
+  const paper = await Paper.findById(ws.paperId);
+  if (!paper) return;
+
+  const annotation = paper.annotations.find(
+    (a: IPaperAnnotation) => a.id === msg.annotationId,
+  );
+  if (!annotation) return;
+
+  annotation.reactions = annotation.reactions.filter(
+    (r: IPaperReaction) =>
+      !(r.author.id === ws.userId && r.type === msg.reactionType),
+  );
+
+  paper.updatedAt = new Date().toISOString();
+  await paper.save();
+
+  broadcastToPaper(ws.paperId!, {
+    type: "reaction_removed",
+    annotationId: annotation.id,
+    userId: ws.userId,
+    reactionType: msg.reactionType,
+  });
+}
+
+// ============================================
+// SESSION MANAGEMENT
+// ============================================
+
+async function handleStartSession(ws: CustomWebSocket, msg: WSMessage) {
+  const paper = await Paper.findById(ws.paperId);
+
+  // Check if user is the creator
+  if (!paper || paper.createdBy.toString() !== ws.userId) {
+    ws.send(
+      JSON.stringify({
+        type: "error",
+        message: "Only the paper creator can start the session",
+      }),
+    );
+    return;
+  }
+
+  // Update paper in database
+  paper.isSessionOpen = true;
+  paper.updatedAt = new Date().toISOString();
+  await paper.save();
+
+  // Store in memory for fast access
+  paperSessions.set(ws.paperId!, {
+    isActive: true,
+    controllerId: ws.userId!,
+    currentPage: msg.currentPage || 1,
+    participants: new Set([ws.userId!]),
+  });
+
+  // Get approved participants count
+  const approvedCount = paper.registrations?.filter(
+    (r: IPaperRegistration) => r.status === "APPROVED",
+  ).length;
+
+  broadcastToPaper(ws.paperId!, {
+    type: "session_started",
+    currentPage: msg.currentPage || 1,
+    controllerId: ws.userId,
+    controllerName: ws.user?.personalInfo?.fullName || ws.registration?.name,
+    participantCount: approvedCount,
+    timestamp: new Date().toISOString(),
+  });
+}
+
+async function handleEndSession(ws: CustomWebSocket) {
+  const paper = await Paper.findById(ws.paperId);
+
+  // Check if user is the creator
+  if (!paper || paper.createdBy.toString() !== ws.userId) {
+    ws.send(
+      JSON.stringify({
+        type: "error",
+        message: "Only the paper creator can end the session",
+      }),
+    );
+    return;
+  }
+
+  // Update paper in database
+  paper.isSessionOpen = false;
+  paper.updatedAt = new Date().toISOString();
+  await paper.save();
+
+  // Remove from memory
+  paperSessions.delete(ws.paperId!);
+
+  broadcastToPaper(ws.paperId!, {
+    type: "session_ended",
+    timestamp: new Date().toISOString(),
+  });
+}
+
+async function handleNavigate(ws: CustomWebSocket, msg: WSMessage) {
+  const session = paperSessions.get(ws.paperId!);
+
+  // Only controller can navigate
+  if (!session || session.controllerId !== ws.userId) {
+    ws.send(
+      JSON.stringify({
+        type: "error",
+        message: "Only the session controller can navigate",
+      }),
+    );
+    return;
+  }
+
+  session.currentPage = msg.page!;
+
+  broadcastToPaper(ws.paperId!, {
+    type: "navigation",
+    page: msg.page,
+    controllerId: ws.userId,
+    timestamp: new Date().toISOString(),
+  });
+}
+
+async function handleJoinSession(ws: CustomWebSocket) {
+  const session = paperSessions.get(ws.paperId!);
+  if (!session) {
+    ws.send(
+      JSON.stringify({
+        type: "error",
+        message: "Session is not active",
+      }),
+    );
+    return;
+  }
+
+  // Check if user is approved in the paper
+  const paper = await Paper.findById(ws.paperId);
+  const registration = paper?.registrations?.find(
+    (r: IPaperRegistration) =>
+      r.emailAddress === ws.registration?.emailAddress ||
+      r.userId === ws.userId,
+  );
+
+  const isApproved = registration?.status === "APPROVED";
+  const isCreator = paper?.createdBy.toString() === ws.userId;
+
+  if (!isApproved && !isCreator) {
+    ws.send(
+      JSON.stringify({
+        type: "error",
+        message: "You are not approved to join this session",
+      }),
+    );
+    return;
+  }
+
+  session.participants.add(ws.userId!);
+
+  ws.send(
+    JSON.stringify({
+      type: "session_state",
+      currentPage: session.currentPage,
+      controllerId: session.controllerId,
+      isActive: session.isActive,
+      participantCount: session.participants.size,
+    }),
+  );
+
+  broadcastToPaper(ws.paperId!, {
+    type: "participant_joined",
+    userId: ws.userId,
+    userName: ws.user?.personalInfo?.fullName || ws.registration?.name,
+    emailAddress: ws.registration?.emailAddress,
+    timestamp: new Date().toISOString(),
+  });
+}
+
+async function handleLeaveSession(ws: CustomWebSocket) {
+  const session = paperSessions.get(ws.paperId!);
+  if (!session) return;
+
+  session.participants.delete(ws.userId!);
+
+  broadcastToPaper(ws.paperId!, {
+    type: "participant_left",
+    userId: ws.userId,
+    userName: ws.user?.personalInfo?.fullName || ws.registration?.name,
+    timestamp: new Date().toISOString(),
+  });
+}
+
+async function handleGetParticipants(ws: CustomWebSocket) {
+  const session = paperSessions.get(ws.paperId!);
+  if (!session) {
+    ws.send(
+      JSON.stringify({
+        type: "participants_list",
+        participants: [],
+        controllerId: null,
+      }),
+    );
+    return;
+  }
+
+  // Get detailed participant info from database
+  const paper = await Paper.findById(ws.paperId);
+  const approvedRegistrations =
+    paper?.registrations?.filter(
+      (r: IPaperRegistration) => r.status === "APPROVED",
+    ) || [];
+
+  const participants = Array.from(session.participants).map((userId) => {
+    const reg = approvedRegistrations.find((r) => r.userId === userId);
+    return {
+      id: userId,
+      name: reg?.name || "Anonymous",
+      emailAddress: reg?.emailAddress || "",
+    };
+  });
+
+  ws.send(
+    JSON.stringify({
+      type: "participants_list",
+      participants: participants,
+      controllerId: session.controllerId,
+      currentPage: session.currentPage,
+      participantCount: session.participants.size,
+    }),
+  );
 }

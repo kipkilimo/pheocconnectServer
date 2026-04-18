@@ -1,412 +1,330 @@
-// resolvers/paperResolvers/queries.ts - FIXED VERSION
+// src/graphql/resolvers/paperResolvers/queries.ts
 import Paper from "../../../models/Paper";
 import User from "../../../models/User";
 import mongoose from "mongoose";
 
+const transformUser = (user: any) => {
+  if (!user) return null;
+  return {
+    id: user._id?.toString() || user.id,
+    name:
+      user.personalInfo?.fullName ||
+      user.personalInfo?.username ||
+      user.email?.split("@")[0] ||
+      "Unknown",
+    email: user.personalInfo?.email || user.email,
+  };
+};
+
+const transformAnnotation = (annotation: any) => {
+  if (!annotation) return null;
+  return {
+    id: annotation._id?.toString() || annotation.id,
+    page: annotation.page,
+    rect: annotation.rect,
+    title: annotation.title,
+    text: annotation.text,
+    author: annotation.author,
+    reactions: annotation.reactions || [],
+    createdAt: annotation.createdAt,
+    updatedAt: annotation.updatedAt,
+  };
+};
+
+const transformRegistration = (registration: any) => {
+  if (!registration) return null;
+  return {
+    id: registration.id,
+    sessionId: registration.sessionId,
+    userId: registration.userId,
+    name: registration.name,
+    emailAddress: registration.emailAddress,
+    email: registration.email,
+    courseTaken: registration.courseTaken,
+    level: registration.level,
+    registeredAt: registration.registeredAt,
+    responses: registration.responses,
+    status: registration.status,
+    approvalToken: registration.approvalToken,
+    registeredVia: registration.registeredVia,
+    approvedAt: registration.approvedAt,
+    rejectedAt: registration.rejectedAt,
+  };
+};
+
 const paperQueries = {
-  // Get paper by ID
   async getPaper(_: any, { id }: { id: string }) {
     try {
-      const paper = await Paper.findById(id)
-        .populate(
-          "createdBy",
-          "personalInfo.fullName personalInfo.username personalInfo.email",
-        )
-        .lean();
-
-      if (!paper) {
-        throw new Error("Paper not found");
-      }
-
-      // Calculate counts with safe access
-      const participants = (paper as any).participants || [];
-      const participantCount = participants.length;
-      const approvedRegistrationsCount = participants.filter(
-        (p: any) => p.status === "APPROVED",
-      ).length;
-      const pendingRegistrationsCount = participants.filter(
-        (p: any) => p.status === "PENDING",
-      ).length;
-      const rejectedRegistrationsCount = participants.filter(
-        (p: any) => p.status === "REJECTED",
-      ).length;
-
-      const availableSpots = (paper as any).maxParticipants
-        ? Math.max(
-            0,
-            (paper as any).maxParticipants - approvedRegistrationsCount,
-          )
-        : null;
-
-      const isFull = (paper as any).maxParticipants
-        ? approvedRegistrationsCount >= (paper as any).maxParticipants
-        : false;
+      const paper = await Paper.findById(id).lean();
+      if (!paper) throw new Error("Paper not found");
 
       return {
-        ...paper,
-        participantCount,
-        approvedRegistrationsCount,
-        pendingRegistrationsCount,
-        rejectedRegistrationsCount,
-        availableSpots,
-        isFull,
+        id: paper._id.toString(),
+        title: paper.title,
+        objective: paper.objective,
+        sessionId: paper.sessionId,
+        createdBy: await transformUser(
+          await User.findById(paper.createdBy).lean(),
+        ),
+        registrations: (paper.registrations || []).map(transformRegistration),
+        participants: (paper.registrations || [])
+          .filter((r: any) => r.status === "APPROVED")
+          .map(transformRegistration),
+        waitingList: (paper.registrations || [])
+          .filter((r: any) => r.status === "WAITING")
+          .map(transformRegistration),
+        pending: (paper.registrations || [])
+          .filter((r: any) => r.status === "PENDING")
+          .map(transformRegistration),
+        qrCodeUrl: paper.qrCodeUrl || "",
+        participantCount: (paper.registrations || []).filter(
+          (r: any) => r.status === "APPROVED",
+        ).length,
+        availableSpots: paper.maxParticipants
+          ? Math.max(
+              0,
+              paper.maxParticipants -
+                (paper.registrations || []).filter(
+                  (r: any) => r.status === "APPROVED",
+                ).length,
+            )
+          : null,
+        isFull: paper.maxParticipants
+          ? (paper.registrations || []).filter(
+              (r: any) => r.status === "APPROVED",
+            ).length >= paper.maxParticipants
+          : false,
+        maxParticipants: paper.maxParticipants,
+        isSessionOpen: paper.isSessionOpen || false,
+        annotations: [],
+        annotationCount: 0,
+        createdAt: paper.createdAt,
+        updatedAt: paper.updatedAt,
       };
     } catch (error) {
-      console.error("Error fetching paper:", error);
+      console.error("Error in getPaper:", error);
       throw new Error("Failed to fetch paper");
     }
   },
 
-  // Get all papers
   async getPapers() {
     try {
-      const papers = await Paper.find()
-        .populate(
-          "createdBy",
-          "personalInfo.fullName personalInfo.username personalInfo.email",
-        )
-        .sort({ createdDate: -1 })
-        .lean();
-
-      // Add calculated fields to each paper
-      return papers.map((paper) => {
-        const participants = (paper as any).participants || [];
-        return {
-          ...paper,
-          participantCount: participants.length,
-          approvedRegistrationsCount: participants.filter(
-            (p: any) => p.status === "APPROVED",
-          ).length,
-          pendingRegistrationsCount: participants.filter(
-            (p: any) => p.status === "PENDING",
-          ).length,
-          rejectedRegistrationsCount: participants.filter(
-            (p: any) => p.status === "REJECTED",
-          ).length,
-        };
-      });
+      const papers = await Paper.find().sort({ createdAt: -1 }).lean();
+      return papers.map((paper) => ({
+        id: paper._id.toString(),
+        title: paper.title,
+        objective: paper.objective,
+        sessionId: paper.sessionId,
+        createdBy: { id: paper.createdBy.toString(), name: "User", email: "" },
+        registrations: [],
+        participants: [],
+        waitingList: [],
+        pending: [],
+        qrCodeUrl: paper.qrCodeUrl || "",
+        participantCount: 0,
+        availableSpots: paper.maxParticipants || null,
+        isFull: false,
+        maxParticipants: paper.maxParticipants,
+        isSessionOpen: paper.isSessionOpen || false,
+        annotations: [],
+        annotationCount: 0,
+        createdAt: paper.createdAt,
+        updatedAt: paper.updatedAt,
+      }));
     } catch (error) {
-      console.error("Error fetching papers:", error);
+      console.error("Error in getPapers:", error);
       throw new Error("Failed to fetch papers");
     }
   },
-
-  // Get LIVE paper by accessKey
-  async getLivePaper(_: any, { accessKey }: { accessKey: string }) {
+  async getMostRecentPapers(_: any, { id }: { id: string }) {
     try {
-      const paper = await Paper.findOne({ accessKey })
-        .populate(
-          "createdBy",
-          "personalInfo.fullName personalInfo.username personalInfo.email role",
-        )
+      const papers = await Paper.find({ createdBy: id })
+        .sort({ createdAt: -1 }) // most recent first
+        .limit(4)
         .lean();
 
-      if (!paper) {
-        throw new Error("Paper not found");
-      }
+      if (!papers || papers.length === 0) return [];
 
-      return {
-        ...paper,
-        annotationCount: (paper as any).annotations?.length || 0,
-      };
+      return papers.map((paper) => ({
+        id: paper._id.toString(),
+        title: paper.title,
+        objective: paper.objective,
+        sessionId: paper.sessionId,
+
+        createdBy: {
+          id: paper.createdBy.toString(),
+          name: "User",
+          email: "",
+        },
+
+        // keep consistent with schema
+        registrations: [],
+        participants: [],
+        waitingList: [],
+        pending: [],
+        url: paper.url,
+
+        qrCodeUrl: paper.qrCodeUrl || "",
+
+        participantCount: 0,
+        availableSpots: paper.maxParticipants || null,
+        isFull: false,
+
+        maxParticipants: paper.maxParticipants,
+        isSessionOpen: paper.isSessionOpen || false,
+
+        annotations: [],
+        annotationCount: 0,
+
+        createdAt: paper.createdAt,
+        updatedAt: paper.updatedAt,
+      }));
     } catch (error) {
-      console.error("Error fetching LIVE paper:", error);
-      throw new Error("Failed to fetch LIVE paper");
+      console.error("Error in getMostRecentPapers:", error);
+      throw new Error("Failed to fetch most recent papers");
     }
   },
-
-  // Get most recent papers
-  async getMostRecentPapers(_: any, { limit = 10 }: { limit?: number }) {
-    try {
-      const papers = await Paper.find()
-        .sort({ createdDate: -1 })
-        .limit(limit)
-        .populate(
-          "createdBy",
-          "personalInfo.fullName personalInfo.username personalInfo.email",
-        )
-        .lean();
-
-      return papers;
-    } catch (error) {
-      console.error("Error fetching recent papers:", error);
-      throw new Error("Failed to fetch recent papers");
-    }
-  },
-
-  // Get paper by sessionId
   async getPaperBySession(_: any, { sessionId }: { sessionId: string }) {
     try {
+      console.log("========== getPaperBySession Debug ==========");
+      console.log("1. Received sessionId:", sessionId);
+      console.log("2. sessionId type:", typeof sessionId);
+      console.log("3. sessionId length:", sessionId?.length);
+
+      // Validate sessionId
+      if (!sessionId) {
+        console.error("SessionId is missing or empty");
+        throw new Error("SessionId is required");
+      }
+
+      // Check database connection
+      console.log("4. Checking database connection...");
+      const dbState = mongoose.connection.readyState;
+      console.log("5. MongoDB connection state:", dbState); // 1 = connected
+
+      // First, check if any papers exist at all
+      const totalPapers = await Paper.countDocuments();
+      console.log("6. Total papers in database:", totalPapers);
+
+      if (totalPapers === 0) {
+        console.log(
+          "No papers found in database. Please create a paper first.",
+        );
+        throw new Error(
+          "No papers exist in the database. Please create a paper first.",
+        );
+      }
+
+      // List all sessionIds for debugging
+      const allPapers = await Paper.find(
+        {},
+        { sessionId: 1, title: 1, _id: 1 },
+      ).lean();
+      console.log(
+        "7. All available papers:",
+        JSON.stringify(allPapers, null, 2),
+      );
+
+      // Try to find the paper
+      console.log("8. Searching for paper with sessionId:", sessionId);
       const paper = await Paper.findOne({ sessionId })
-        .populate(
-          "createdBy",
-          "personalInfo.fullName personalInfo.username personalInfo.email",
-        )
+        .populate("createdBy")
         .lean();
 
       if (!paper) {
-        throw new Error("Paper not found");
+        console.error(`9. Paper NOT found with sessionId: ${sessionId}`);
+        console.log(
+          "10. Available sessionIds:",
+          allPapers.map((p) => p.sessionId),
+        );
+        throw new Error(
+          `Paper not found with sessionId: ${sessionId}. Available sessionIds: ${allPapers.map((p) => p.sessionId).join(", ")}`,
+        );
       }
 
-      return paper;
-    } catch (error) {
-      console.error("Error fetching paper by session:", error);
-      throw new Error("Failed to fetch paper");
-    }
-  },
+      console.log("11. Paper found:", paper.title);
+      console.log("12. Paper sessionId:", paper.sessionId);
+      console.log("13. Paper createdBy:", paper.createdBy);
 
-  // Get annotations for a paper
-  async getPaperAnnotations(
-    _: any,
-    {
-      paperId,
-      page,
-      limit = 50,
-    }: { paperId: string; page?: number; limit?: number },
-  ) {
-    try {
-      const paper = await Paper.findById(paperId);
-      if (!paper) {
-        throw new Error("Paper not found");
-      }
-
-      let annotations = (paper as any).annotations || [];
-
-      if (page !== undefined && page !== null) {
-        annotations = annotations.filter((a: any) => a.page === page);
-      }
-
-      return annotations.slice(0, limit);
-    } catch (error) {
-      console.error("Error fetching annotations:", error);
-      throw new Error("Failed to fetch annotations");
-    }
-  },
-
-  // Get current user's annotations across all papers
-  async getMyPaperAnnotations(_: any, __: any, { user }: any) {
-    try {
-      if (!user || !user.id) {
-        throw new Error("Not authenticated");
-      }
-
-      const papers = await Paper.find({
-        "annotations.author.id": user.id,
-      }).lean();
-
-      const allAnnotations = papers.flatMap((paper) =>
-        ((paper as any).annotations || []).filter(
-          (a: any) => a.author.id === user.id,
-        ),
-      );
-
-      // FIXED: Use proper date parsing with null checks
-      return allAnnotations
-        .sort((a, b) => {
-          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-          return dateB - dateA;
-        })
-        .slice(0, 100);
-    } catch (error) {
-      console.error("Error fetching my annotations:", error);
-      throw new Error("Failed to fetch annotations");
-    }
-  },
-
-  // Get pending access requests for a paper
-  async getPaperPendingAccessRequests(
-    _: any,
-    { paperId }: { paperId: string },
-    { user }: any,
-  ) {
-    try {
-      if (!user || !user.id) {
-        throw new Error("Not authenticated");
-      }
-
-      const paper = await Paper.findById(paperId);
-      if (!paper) {
-        throw new Error("Paper not found");
-      }
-
-      if ((paper as any).createdBy.toString() !== user.id) {
-        throw new Error("Not authorized to view access requests");
-      }
-
-      return (paper as any).pendingRequests || [];
-    } catch (error) {
-      console.error("Error fetching pending requests:", error);
-      throw new Error("Failed to fetch pending requests");
-    }
-  },
-
-  // Get approved collaborators for a paper
-  async getPaperApprovedCollaborators(
-    _: any,
-    { paperId }: { paperId: string },
-    { user }: any,
-  ) {
-    try {
-      if (!user || !user.id) {
-        throw new Error("Not authenticated");
-      }
-
-      const paper = await Paper.findById(paperId);
-      if (!paper) {
-        throw new Error("Paper not found");
-      }
-
-      const isCreator = (paper as any).createdBy.toString() === user.id;
-      const isApproved = (paper as any).approvedCollaborators?.some(
-        (c: any) => c.email === user.personalInfo?.email,
-      );
-
-      if (!isCreator && !isApproved) {
-        throw new Error("Not authorized to view collaborators");
-      }
-
-      return (paper as any).approvedCollaborators || [];
-    } catch (error) {
-      console.error("Error fetching approved collaborators:", error);
-      throw new Error("Failed to fetch approved collaborators");
-    }
-  },
-
-  // Check paper access (simple boolean)
-  async checkPaperAccess(
-    _: any,
-    { sessionId, email }: { sessionId: string; email: string },
-  ) {
-    try {
-      const paper = await Paper.findOne({ sessionId });
-      if (!paper) {
-        return false;
-      }
-
-      const creator = await User.findById((paper as any).createdBy).lean();
-      if (creator?.personalInfo?.email === email) {
-        return true;
-      }
-
-      const isApproved = (paper as any).approvedCollaborators?.some(
-        (c: any) => c.email === email,
-      );
-
-      return !!isApproved;
-    } catch (error) {
-      console.error("Error checking paper access:", error);
-      return false;
-    }
-  },
-
-  // Get paper waiting list
-  async getPaperWaitingList(
-    _: any,
-    { paperId }: { paperId: string },
-    { user }: any,
-  ) {
-    try {
-      if (!user || !user.id) {
-        throw new Error("Not authenticated");
-      }
-
-      const paper = await Paper.findById(paperId);
-      if (!paper) {
-        throw new Error("Paper not found");
-      }
-
-      if ((paper as any).createdBy.toString() !== user.id) {
-        throw new Error("Not authorized to view waiting list");
-      }
-
-      const registrations = (paper as any).waitingList || [];
-      const totalCount = registrations.length;
-      const pendingCount = registrations.filter(
-        (r: any) => r.status === "PENDING",
-      ).length;
-      const approvedCount = registrations.filter(
+      // Process registrations
+      const approved = (paper.registrations || []).filter(
         (r: any) => r.status === "APPROVED",
-      ).length;
-      const rejectedCount = registrations.filter(
-        (r: any) => r.status === "REJECTED",
-      ).length;
+      );
 
-      return {
-        registrations,
-        totalCount,
-        pendingCount,
-        approvedCount,
-        rejectedCount,
-      };
-    } catch (error) {
-      console.error("Error fetching waiting list:", error);
-      throw new Error("Failed to fetch waiting list");
-    }
-  },
+      const waiting = (paper.registrations || []).filter(
+        (r: any) => r.status === "WAITING",
+      );
 
-  // Check paper session access with detailed response
-  async checkPaperSessionAccess(
-    _: any,
-    { sessionId, email }: { sessionId: string; email: string },
-  ) {
-    try {
-      const paper = await Paper.findOne({ sessionId });
-      if (!paper) {
-        return {
-          hasAccess: false,
-          isSessionOpen: false,
-          isTimeReached: false,
-          message: "Paper session not found",
-          paperDetails: null,
-        };
-      }
+      const pending = (paper.registrations || []).filter(
+        (r: any) => r.status === "PENDING",
+      );
 
-      const hasAccess =
-        (paper as any).approvedCollaborators?.some(
-          (c: any) => c.email === email,
-        ) || false;
+      console.log(
+        "14. Registration counts - Approved:",
+        approved.length,
+        "Waiting:",
+        waiting.length,
+        "Pending:",
+        pending.length,
+      );
 
-      const isSessionOpen = (paper as any).isSessionOpen || false;
-
-      const now = new Date();
-      const sessionStartTime = (paper as any).sessionStartTime
-        ? new Date((paper as any).sessionStartTime)
-        : null;
-      const isTimeReached = sessionStartTime ? now >= sessionStartTime : true;
-
-      let message = "";
-      if (!hasAccess) message = "You don't have access to this paper";
-      else if (!isSessionOpen) message = "Session is not open";
-      else if (!isTimeReached) message = "Session hasn't started yet";
-      else message = "Access granted";
-
-      return {
-        hasAccess,
-        isSessionOpen,
-        isTimeReached,
-        message,
-        paperDetails: hasAccess
+      const result = {
+        id: paper._id.toString(),
+        title: paper.title,
+        objective: paper.objective,
+        sessionId: paper.sessionId,
+        url: paper.url || "",
+        qrCodeUrl: paper.qrCodeUrl || "",
+        sessionStartTime: paper.sessionStartTime,
+        sessionEndTime: paper.sessionEndTime,
+        maxParticipants: paper.maxParticipants,
+        isSessionOpen: paper.isSessionOpen || false,
+        createdAt: paper.createdAt,
+        updatedAt: paper.updatedAt,
+        createdBy: paper.createdBy
           ? {
-              title: (paper as any).title,
-              objective: (paper as any).objective,
-              sessionId: (paper as any).sessionId,
+              id: (paper.createdBy as any)._id.toString(),
+              personalInfo: {
+                fullName: (paper.createdBy as any).personalInfo?.fullName || "",
+                email: (paper.createdBy as any).personalInfo?.email || "",
+              },
             }
           : null,
       };
+
+      console.log("15. Successfully returning paper data");
+      console.log("==========================================");
+
+      return result || {};
     } catch (error) {
-      console.error("Error checking session access:", error);
-      throw new Error("Failed to check session access");
+      console.error("========== Error in getPaperBySession ==========");
+
+      // Type-safe error handling
+      if (error instanceof Error) {
+        console.error("Error message:", error.message);
+        console.error("Error stack:", error.stack);
+        console.error("Error name:", error.name);
+      } else {
+        console.error("Unknown error:", error);
+      }
+
+      console.error("================================================");
+
+      // Throw a more specific error message
+      if (error instanceof Error) {
+        throw new Error(`Failed to fetch paper: ${error.message}`);
+      } else {
+        throw new Error("Failed to fetch paper: An unknown error occurred");
+      }
     }
   },
 
-  // Check paper registration status
   async checkPaperRegistrationStatus(
     _: any,
     { paperId, email }: { paperId: string; email: string },
   ) {
     try {
-      const paper = await Paper.findById(paperId);
+      const paper = await Paper.findById(paperId).lean();
       if (!paper) {
         return {
           success: false,
@@ -419,8 +337,8 @@ const paperQueries = {
         };
       }
 
-      const registration = (paper as any).participants?.find(
-        (p: any) => p.emailAddress === email || p.email === email,
+      const registration = (paper.registrations || []).find(
+        (r: any) => r.emailAddress === email || r.email === email,
       );
 
       if (!registration) {
@@ -430,8 +348,8 @@ const paperQueries = {
           registrationId: null,
           status: null,
           approvalToken: null,
-          paperId: (paper as any)._id.toString(),
-          sessionId: (paper as any).sessionId,
+          paperId: paper._id.toString(),
+          sessionId: paper.sessionId,
         };
       }
 
@@ -441,41 +359,12 @@ const paperQueries = {
         registrationId: registration.id,
         status: registration.status,
         approvalToken: registration.approvalToken,
-        paperId: (paper as any)._id.toString(),
-        sessionId: (paper as any).sessionId,
+        paperId: paper._id.toString(),
+        sessionId: paper.sessionId,
       };
     } catch (error) {
       console.error("Error checking registration status:", error);
       throw new Error("Failed to check registration status");
-    }
-  },
-
-  // Get paper pending registrations
-  async getPaperPendingRegistrations(
-    _: any,
-    { paperId }: { paperId: string },
-    { user }: any,
-  ) {
-    try {
-      if (!user || !user.id) {
-        throw new Error("Not authenticated");
-      }
-
-      const paper = await Paper.findById(paperId);
-      if (!paper) {
-        throw new Error("Paper not found");
-      }
-
-      if ((paper as any).createdBy.toString() !== user.id) {
-        throw new Error("Not authorized to view registrations");
-      }
-
-      return ((paper as any).participants || []).filter(
-        (p: any) => p.status === "PENDING",
-      );
-    } catch (error) {
-      console.error("Error fetching pending registrations:", error);
-      throw new Error("Failed to fetch pending registrations");
     }
   },
 };

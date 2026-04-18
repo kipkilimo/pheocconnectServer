@@ -2,7 +2,7 @@
 import paperQueries from "./queries";
 import paperMutations from "./mutations";
 import Paper from "../../../models/Paper";
-import Annotation from "../../../models/Annotation";
+import PaperAnnotation from "../../../models/PaperAnnotation";
 import User from "../../../models/User";
 
 // Field resolvers for Paper type
@@ -16,7 +16,7 @@ const paperFieldResolvers = {
     },
 
     async annotations(paper: any) {
-      return await Annotation.find({ paperId: paper.id })
+      return await PaperAnnotation.find({ paperId: paper.id })
         .sort({ createdAt: -1 })
         .limit(50)
         .lean();
@@ -24,12 +24,12 @@ const paperFieldResolvers = {
 
     async annotationCount(paper: any) {
       if (paper.annotationCount !== undefined) return paper.annotationCount;
-      return await Annotation.countDocuments({ paperId: paper.id });
+      return await PaperAnnotation.countDocuments({ paperId: paper.id });
     },
   },
 
-  // Field resolvers for Annotation type
-  Annotation: {
+  // Field resolvers for PaperAnnotation type
+  PaperAnnotation: {
     async author(annotation: any) {
       if (typeof annotation.author === "object" && annotation.author !== null) {
         return annotation.author;
