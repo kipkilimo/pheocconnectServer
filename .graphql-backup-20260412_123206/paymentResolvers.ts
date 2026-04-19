@@ -197,7 +197,7 @@ const resolvers = {
         const publisherName = `${
           activatingUser ? activatingUser.personalInfo.fullName : "TBD"
         }`;
-        const paymentAccount = `NEMBio DONATION | Donor: ${publisherName}`;
+        const paymentAccount = `PHEOCConnect DONATION | Donor: ${publisherName}`;
         const paidAmount = Number(args.paidAmount);
         const dollarRate = Number(process.env.DOLLAR_RATE) || 1;
         const usdValue = paidAmount / dollarRate;
@@ -220,7 +220,7 @@ const resolvers = {
         const paymentObjectBody = await mpesaApi.lipaNaMpesaOnline(
           args.paymentPhoneNumber,
           paidAmount,
-          "https://nembio.com/success",
+          "https://pheocconnect.com/success",
           paymentAccount,
         );
 
@@ -291,7 +291,7 @@ const resolvers = {
         const publisherName = `${
           activatingUser ? activatingUser.personalInfo.fullName : "Anonymous"
         }`;
-        const paymentAccount = `NEMBio DONATION | Donor: ${publisherName}`;
+        const paymentAccount = `PHEOCConnect DONATION | Donor: ${publisherName}`;
 
         const receiptNumber = generateUniqueCode(12).toUpperCase();
         const newPayment = new Payment({
@@ -342,7 +342,7 @@ const resolvers = {
           throw new Error("No teacher matching provided details");
 
         const publisherName = `${activatingUser.personalInfo.fullName}`;
-        const paymentAccount = `${publisherName} NEMBio Publication Credits`;
+        const paymentAccount = `${publisherName} PHEOCConnect Publication Credits`;
         const paidAmount = Number(args.paidAmount);
         const dollarRate = Number(process.env.DOLLAR_RATE) || 1;
         const usdValue = paidAmount / dollarRate;
@@ -365,7 +365,7 @@ const resolvers = {
         const paymentObjectBody = await mpesaApi.lipaNaMpesaOnline(
           args.paymentPhoneNumber,
           paidAmount,
-          "https://nembio.com/success",
+          "https://pheocconnect.com/success",
           paymentAccount,
         );
 
@@ -609,7 +609,7 @@ const resolvers = {
           throw new Error("No invoice found");
 
         const paidAmount = Number(args.paidAmount);
-        const paymentAccount = `${payingUser.personalInfo.fullName} NEMBio Consultation Payment`;
+        const paymentAccount = `${payingUser.personalInfo.fullName} PHEOCConnect Consultation Payment`;
 
         // 2. Initialize MPESA payment
         const mpesaApi = new Mpesa({
@@ -628,7 +628,7 @@ const resolvers = {
         const paymentObjectBody = await mpesaApi.lipaNaMpesaOnline(
           args.paymentPhoneNumber,
           paidAmount,
-          "https://nembio.com/success",
+          "https://pheocconnect.com/success",
           paymentAccount,
         );
 
@@ -866,8 +866,8 @@ const resolvers = {
         const paymentObjectBody = await mpesaApi.lipaNaMpesaOnline(
           paymentPhoneNumber,
           Number(paidAmount),
-          "https://nembio.com/success",
-          "NEMBio Premium Access Payment",
+          "https://pheocconnect.com/success",
+          "PHEOCConnect Premium Access Payment",
         );
 
         const delay = (ms: number) =>

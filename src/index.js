@@ -48,13 +48,13 @@ app.use((req, res, next) => {
 });
 app.options("*", cors());
 const corsOptions = {
-  origin: "https://nembio.com:4000/graphql",
+  origin: "https://pheocconnect.com:4000/graphql",
   credentials: true,
   optionSuccessStatus: 200,
 };
 
 const corsOptions2 = {
-  origin: "https://nembio.com:4000",
+  origin: "https://pheocconnect.com:4000",
   credentials: true,
   optionSuccessStatus: 200,
 };
@@ -123,7 +123,7 @@ app.use(
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE");
   res.header("Access-Control-Allow-Headers", "Content-Type");
-  res.header("Access-Control-Allow-Origin", "https://nembio.com:3000");
+  res.header("Access-Control-Allow-Origin", "https://pheocconnect.com:3000");
   res.header("Access-Control-Allow-Origin", "http://192.168.1.64:3000");
 
   res.header("Access-Control-Allow-Origin", "http://192.168.1.66:3000");
@@ -133,7 +133,7 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE");
   res.header("Access-Control-Allow-Headers", "Content-Type");
-  res.header("Access-Control-Allow-Origin", "nembio.com");
+  res.header("Access-Control-Allow-Origin", "pheocconnect.com");
   next();
 });
 
@@ -201,9 +201,9 @@ io.on("connection", (socket) => {
 
 // online
 /*
-rm -r root@209.38.200.25:/nembio.com/server 
+rm -r root@209.38.200.25:/pheocconnect.com/server 
 
-scp -r ~/Desktop/xxx/nembio.com/server/ root@209.38.200.25:/nembio.com/
+scp -r ~/Desktop/xxx/pheocconnect.com/server/ root@209.38.200.25:/pheocconnect.com/
 
 sudo apt-get remove nginx &&
 sudo apt-get purge nginx &&
@@ -211,11 +211,11 @@ sudo apt-get autoremove
 
 
 const privateKey = fs.readFileSync(
-  "/etc/letsencrypt/live/nembio.com/privkey.pem",
+  "/etc/letsencrypt/live/pheocconnect.com/privkey.pem",
   "utf8"
 );
 const certificate = fs.readFileSync(
-  "/etc/letsencrypt/live/nembio.com/fullchain.pem",
+  "/etc/letsencrypt/live/pheocconnect.com/fullchain.pem",
   "utf8"
 );
 

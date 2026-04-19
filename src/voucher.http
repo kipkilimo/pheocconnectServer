@@ -1,3 +1,3 @@
-GET https://nembio.com:4000/vendors/send-vouchers?awardeeEmails=["kipkilimo@gmail.com"]
+GET https://pheocconnect.com:4000/vendors/send-vouchers?awardeeEmails=["kipkilimo@gmail.com"]
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NmMyNTUxMzIxNTMwZjY4MTBlZjMwZWQiLCJpYXQiOjE3MjQ5MjU4MDIsImV4cCI6MTcyNTUzMDYwMn0.QqH8lKGs5lSfPTNa-mApDHqKe8rtu3FkHACx8Vhe4Lw
 Content-Type: application/json

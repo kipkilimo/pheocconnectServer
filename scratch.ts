@@ -20,7 +20,7 @@ export interface EmailOptions {
 
 // Define constants for Mailtrap API Token and email addresses
 const TOKEN = process.env.MAILTRAP_TOKEN!;
-const SENDER_EMAIL = "info@nembio.com";
+const SENDER_EMAIL = "info@pheocconnect.com";
 const RECIPIENT_EMAIL = "<RECIPIENT@EMAIL.COM>";
 
 // Create a transport using Mailtrap and Nodemailer
@@ -48,7 +48,7 @@ export async function sendEmail({
       },
       from: {
         address: from,
-        name: "NEMBio Communication",
+        name: "PHEOCConnect Communication",
       },
       subject,
       html,

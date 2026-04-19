@@ -354,7 +354,7 @@ const userResolver = {
             <td align="center" style="padding:22px 20px; border-bottom:1px solid #eef0f2;">
               <img
                 src="https://a2z-v0.s3.eu-central-1.amazonaws.com/Screenshot+from+2024-10-22+16-31-16.png"
-                alt="NEMBio Logo"
+                alt="PHEOCConnect Logo"
                 style="width:180px; max-width:70%; height:auto;"
               />
             </td>
@@ -364,7 +364,7 @@ const userResolver = {
           <tr>
             <td style="padding:22px 24px 10px 24px;">
               <h1 style="margin:0; font-size:20px; font-weight:700; color:${textColor}; letter-spacing:-0.2px;">
-                Welcome to NEMBio Learning 🎉
+                Welcome to PHEOCConnect Learning 🎉
               </h1>
               <p style="margin:8px 0 0 0; font-size:13px; color:${textMuted}; line-height:1.5;">
                 Hello ${user.personalInfo.fullName}, thanks for signing up! Activate your account to get started.
@@ -375,7 +375,7 @@ const userResolver = {
           <!-- Body -->
           <tr>
             <td style="padding:10px 24px 0 24px; font-size:13px; color:${textColor}; line-height:1.6;">
-              Click the button below to activate your account and access all features on NEMBio Learning.
+              Click the button below to activate your account and access all features on PHEOCConnect Learning.
             </td>
           </tr>
 
@@ -440,10 +440,10 @@ const userResolver = {
               </div>
 
               <div>Nairobi, KE</div>
-              <div>Tel: +254 700 378 241 | Email: info@nembio.com</div>
+              <div>Tel: +254 700 378 241 | Email: info@pheocconnect.com</div>
 
               <div style="margin-top:12px; font-size:11px; color:#a0a4aa;">
-                © ${new Date().getFullYear()} NEMBio Learning. All rights reserved.
+                © ${new Date().getFullYear()} PHEOCConnect Learning. All rights reserved.
               </div>
 
             </td>
@@ -460,7 +460,7 @@ const userResolver = {
 
       const emailOptions = {
         to: [user.personalInfo.email],
-        subject: "Activate Your Account on  NEMBio Learning",
+        subject: "Activate Your Account on  PHEOCConnect Learning",
         html: emailBody,
       };
 
@@ -534,7 +534,7 @@ const userResolver = {
             <td align="center" style="padding:22px 20px; border-bottom:1px solid #eef0f2;">
               <img
                 src="https://a2z-v0.s3.eu-central-1.amazonaws.com/Screenshot+from+2024-10-22+16-31-16.png"
-                alt="NEMBio Logo"
+                alt="PHEOCConnect Logo"
                 style="width:180px; max-width:70%; height:auto;"
               />
             </td>
@@ -544,7 +544,7 @@ const userResolver = {
           <tr>
             <td style="padding:22px 24px 10px 24px;">
               <h1 style="margin:0; font-size:20px; font-weight:700; color:${textColor}; letter-spacing:-0.2px;">
-                Welcome to NEMBio Learning 🎉
+                Welcome to PHEOCConnect Learning 🎉
               </h1>
               <p style="margin:8px 0 0 0; font-size:13px; color:${textMuted}; line-height:1.5;">
                 Hello ${user.personalInfo.fullName}, your account is almost ready.
@@ -599,7 +599,7 @@ const userResolver = {
                 font-size:12px;
                 color:${textMuted};
               ">
-                Once activated, you can log in and begin using NEMBio Learning.
+                Once activated, you can log in and begin using PHEOCConnect Learning.
               </div>
             </td>
           </tr>
@@ -618,9 +618,9 @@ const userResolver = {
                 The Hub for Learning Epidemiology, Biostatistics and Research Methods.
               </div>
               <div>Nairobi, KE</div>
-              <div>Tel: +254 700 378 241 | Email: info@nembio.com</div>
+              <div>Tel: +254 700 378 241 | Email: info@pheocconnect.com</div>
               <div style="margin-top:12px; font-size:11px; color:#a0a4aa;">
-                © ${new Date().getFullYear()} NEMBio Learning. All rights reserved.
+                © ${new Date().getFullYear()} PHEOCConnect Learning. All rights reserved.
               </div>
             </td>
           </tr>
@@ -636,7 +636,7 @@ const userResolver = {
 
         const emailOptions = {
           to: [user.personalInfo.email],
-          subject: "Activate Your Account on  NEMBio Learning",
+          subject: "Activate Your Account on  PHEOCConnect Learning",
           html: emailBody,
         };
 
@@ -708,7 +708,7 @@ const userResolver = {
   <div style="background-color:${surfaceColor}; padding:20px; text-align:center; border-bottom:1px solid #eef0f2;">
     <img 
       src="https://a2z-v0.s3.eu-central-1.amazonaws.com/Screenshot+from+2024-10-22+16-31-16.png" 
-      alt="NEMBio Learning Logo" 
+      alt="PHEOCConnect Learning Logo" 
       style="width:180px; max-width:70%; height:auto;"
     />
   </div>
@@ -717,7 +717,7 @@ const userResolver = {
   <div style="max-width:600px; margin:0 auto; background:${surfaceColor}; padding:24px; border-radius:12px; margin-top:20px;">
 
     <h1 style="margin:0; font-size:20px; font-weight:700; color:${textColor}; letter-spacing:-0.2px;">
-      Welcome to NEMBio Learning 🎉
+      Welcome to PHEOCConnect Learning 🎉
     </h1>
 
     <p style="margin:10px 0 0 0; font-size:13px; color:${textMuted}; line-height:1.6;">
@@ -763,7 +763,7 @@ const userResolver = {
       font-size:12px;
       color:${textMuted};
     ">
-      Once activated, you can log in and start using NEMBio Learning.
+      Once activated, you can log in and start using PHEOCConnect Learning.
     </div>
 
   </div>
@@ -776,10 +776,10 @@ const userResolver = {
     </p>
 
     <p style="margin:0;">Nairobi, KE</p>
-    <p style="margin:4px 0 0 0;">Tel: +254 700 378 241 | Email: info@nembio.com</p>
+    <p style="margin:4px 0 0 0;">Tel: +254 700 378 241 | Email: info@pheocconnect.com</p>
 
     <p style="margin-top:12px; font-size:11px; color:#a0a4aa;">
-      © ${new Date().getFullYear()} NEMBio Learning. All rights reserved.
+      © ${new Date().getFullYear()} PHEOCConnect Learning. All rights reserved.
     </p>
 
   </div>
@@ -789,7 +789,7 @@ const userResolver = {
 
         const emailOptions = {
           to: [user.personalInfo.email],
-          subject: "Activate Your Account on  NEMBio Learning",
+          subject: "Activate Your Account on  PHEOCConnect Learning",
           html: emailBody,
         };
 
@@ -863,7 +863,7 @@ const userResolver = {
   <div style="background-color:${surfaceColor}; padding:20px; text-align:center; border-bottom:1px solid #eef0f2;">
     <img 
       src="https://a2z-v0.s3.eu-central-1.amazonaws.com/Screenshot+from+2024-10-22+16-31-16.png" 
-      alt="NEMBio Learning Logo" 
+      alt="PHEOCConnect Learning Logo" 
       style="width:180px; max-width:70%; height:auto;"
     />
   </div>
@@ -880,7 +880,7 @@ const userResolver = {
     </p>
 
     <p style="margin:14px 0 0 0; font-size:13px; line-height:1.6;">
-      To activate your account and start using NEMBio Learning, click the button below:
+      To activate your account and start using PHEOCConnect Learning, click the button below:
     </p>
 
     <!-- CTA Button -->
@@ -931,10 +931,10 @@ const userResolver = {
     </p>
 
     <p style="margin:0;">Nairobi, KE</p>
-    <p style="margin:4px 0 0 0;">Tel: +254 700 378 241 | Email: info@nembio.com</p>
+    <p style="margin:4px 0 0 0;">Tel: +254 700 378 241 | Email: info@pheocconnect.com</p>
 
     <p style="margin-top:12px; font-size:11px; color:#a0a4aa;">
-      © ${new Date().getFullYear()} NEMBio Learning. All rights reserved.
+      © ${new Date().getFullYear()} PHEOCConnect Learning. All rights reserved.
     </p>
 
   </div>
@@ -944,7 +944,7 @@ const userResolver = {
 
         const emailOptions = {
           to: [user.personalInfo.email],
-          subject: "Activate Your Account on  NEMBio Learning",
+          subject: "Activate Your Account on  PHEOCConnect Learning",
           html: emailBody,
         };
 
@@ -1116,7 +1116,7 @@ const userResolver = {
             <td align="center" style="padding:22px 20px; background:${surfaceColor}; border-bottom:1px solid #eef0f2;">
               <img
                 src="https://a2z-v0.s3.eu-central-1.amazonaws.com/Screenshot+from+2024-10-22+16-31-16.png"
-                alt="NEMBio Logo"
+                alt="PHEOCConnect Logo"
                 style="width:180px; max-width:70%; height:auto;"
               />
             </td>
@@ -1129,7 +1129,7 @@ const userResolver = {
                 One-Time Login Password
               </h1>
               <p style="margin:8px 0 0 0; font-size:13px; color:${textMuted}; line-height:1.5;">
-                Hello ${user.personalInfo.fullName}, use the code below to sign in to your NEMBio account.
+                Hello ${user.personalInfo.fullName}, use the code below to sign in to your PHEOCConnect account.
               </p>
             </td>
           </tr>
@@ -1192,10 +1192,10 @@ const userResolver = {
               </div>
 
               <div>Nairobi, KE</div>
-              <div>Tel: +254 700 378 241 | Email: info@nembio.com</div>
+              <div>Tel: +254 700 378 241 | Email: info@pheocconnect.com</div>
 
               <div style="margin-top:12px; font-size:11px; color:#a0a4aa;">
-                © ${new Date().getFullYear()} NEMBio Learning. All rights reserved.
+                © ${new Date().getFullYear()} PHEOCConnect Learning. All rights reserved.
               </div>
 
             </td>
@@ -1212,7 +1212,7 @@ const userResolver = {
 `;
       const emailOptions = {
         to: [user.personalInfo.email],
-        subject: "One time signin pin on NEMBio Learning",
+        subject: "One time signin pin on PHEOCConnect Learning",
         html: emailBody,
       };
 
@@ -1299,7 +1299,7 @@ const userResolver = {
             <td align="center" style="padding:22px 20px; border-bottom:1px solid #eef0f2;">
               <img
                 src="https://a2z-v0.s3.eu-central-1.amazonaws.com/Screenshot+from+2024-10-22+16-31-16.png"
-                alt="NEMBio Logo"
+                alt="PHEOCConnect Logo"
                 style="width:180px; max-width:70%; height:auto;"
               />
             </td>
@@ -1383,9 +1383,9 @@ const userResolver = {
                 The Hub for Learning Epidemiology, Biostatistics and Research Methods.
               </div>
               <div>Nairobi, KE</div>
-              <div>Tel: +254 700 378 241 | Email: info@nembio.com</div>
+              <div>Tel: +254 700 378 241 | Email: info@pheocconnect.com</div>
               <div style="margin-top:12px; font-size:11px; color:#a0a4aa;">
-                © ${new Date().getFullYear()} NEMBio Learning. All rights reserved.
+                © ${new Date().getFullYear()} PHEOCConnect Learning. All rights reserved.
               </div>
             </td>
           </tr>
@@ -1399,7 +1399,7 @@ const userResolver = {
 
       const emailOptions = {
         to: [user.personalInfo.email],
-        subject: "Password Reset Request on NEMBio Learning",
+        subject: "Password Reset Request on PHEOCConnect Learning",
         html: emailBody,
       };
 

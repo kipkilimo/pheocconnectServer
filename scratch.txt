@@ -1,18 +1,18 @@
 # Redirect all HTTP traffic to HTTPS
 server {
     listen 80;
-    server_name nembio.comwww.nembio.com;
-    return 301 https://nembio.com$request_uri;
+    server_name pheocconnect.comwww.pheocconnect.com;
+    return 301 https://pheocconnect.com$request_uri;
 }
 
 server {
     listen 443 ssl;
-    server_name nembio.comwww.nembio.com;
+    server_name pheocconnect.comwww.pheocconnect.com;
 
-    ssl_certificate / etc / letsencrypt / live / nembio.com/ fullchain.pem;
-    ssl_certificate_key / etc / letsencrypt / live / nembio.com/ privkey.pem;
+    ssl_certificate / etc / letsencrypt / live / pheocconnect.com/ fullchain.pem;
+    ssl_certificate_key / etc / letsencrypt / live / pheocconnect.com/ privkey.pem;
 
-    root /var/www/nembio.com/ client / dist;
+    root /var/www/pheocconnect.com/ client / dist;
     index index.html;
 
     gzip on;
