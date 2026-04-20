@@ -1,3 +1,4 @@
+import os from "os";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -15,7 +16,7 @@ import { ApolloServerPluginLandingPageGraphQLPlayground } from "@apollo/server-p
 
 import connectDB from "./database/connection";
 import schema from "./graphql/schema";
-import { context as authContext } from "./utils/authGenerator";
+import { authMiddleware, context as authContext } from "./utils/authGenerator";
 
 /* ============================================
  SINGLE WEBSOCKET: ALERT STREAM
@@ -79,10 +80,10 @@ const startServer = async () => {
   app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
   /* ============================================
-   AUTH CONTEXT
+   AUTH MIDDLEWARE (Express)
   ============================================ */
-
-  app.use(authContext);
+  // This attaches user to req.user for Express routes
+  app.use(authMiddleware);
 
   /* ============================================
    APOLLO SERVER
@@ -102,7 +103,9 @@ const startServer = async () => {
     expressMiddleware(apolloServer, {
       context: async ({ req }) => ({
         req,
-        pubsub, // used for alert fan-out
+        pubsub,
+        // Get user from either the authMiddleware or directly from token
+        user: (req as any).user || (await authContext({ req })).user,
       }),
     }),
   );
@@ -161,16 +164,63 @@ const startServer = async () => {
    START
   ============================================ */
 
+  /* ============================================
+   START
+  ============================================ */
+
   const PORT = Number(process.env.PORT) || 4040;
 
   server.listen(PORT, "0.0.0.0", () => {
-    console.log(`🚀 PHEOC Server running`);
+    console.log(`\n🚀 PHEOC Server running`);
     console.log(`📡 GraphQL: /graphql`);
     console.log(`🚨 Alerts WS: /alerts`);
     console.log(`🌍 Port: ${PORT}`);
+    console.log(`\n📝 Active endpoints (clickable):\n`);
+
+    // Get all network interfaces
+    const networkInterfaces = os.networkInterfaces();
+
+    // Display localhost
+    console.log(`   🏠 http://localhost:${PORT}/graphql`);
+    console.log(`   🏠 http://127.0.0.1:${PORT}/graphql`);
+
+    // Display all network IPs
+    Object.keys(networkInterfaces).forEach((interfaceName) => {
+      const interfaces = networkInterfaces[interfaceName];
+      if (interfaces) {
+        interfaces.forEach((netInterface) => {
+          if (netInterface.family === "IPv4" && !netInterface.internal) {
+            console.log(
+              `   🌐 ${interfaceName}: http://${netInterface.address}:${PORT}/graphql`,
+            );
+          }
+        });
+      }
+    });
+
+    console.log(`\n🔌 WebSocket endpoints:\n`);
+
+    // Display WebSocket endpoints
+    console.log(`   🏠 ws://localhost:${PORT}/alerts`);
+    console.log(`   🏠 ws://127.0.0.1:${PORT}/alerts`);
+
+    Object.keys(networkInterfaces).forEach((interfaceName) => {
+      const interfaces = networkInterfaces[interfaceName];
+      if (interfaces) {
+        interfaces.forEach((netInterface) => {
+          if (netInterface.family === "IPv4" && !netInterface.internal) {
+            console.log(
+              `   📡 ${interfaceName}: ws://${netInterface.address}:${PORT}/alerts`,
+            );
+          }
+        });
+      }
+    });
+
+    console.log(`\n✨ Server ready! Press Ctrl+C to stop\n`);
   });
 };
-
+// Call startServer outside the function definition
 startServer().catch((err) => {
   console.error("💥 Server failed:", err);
   process.exit(1);
