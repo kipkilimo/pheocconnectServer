@@ -72,7 +72,7 @@ export const eocTypeDefs = gql`
   # ============================================
 
   extend type Query {
-    eocs: [EOC!]!
+    eocs(limit: Int, offset: Int, county: String, alertLevel: String): [EOC!]!
     eoc(id: ID!): EOC
 
     rootEOCs: [EOC!]!
@@ -83,11 +83,7 @@ export const eocTypeDefs = gql`
     # GIS QUERIES (NEW)
     # ============================================
 
-    eocsNear(
-      lng: Float!
-      lat: Float!
-      radiusKm: Float!
-    ): [EOC!]!
+    eocsNear(lng: Float!, lat: Float!, radiusKm: Float!): [EOC!]!
 
     eocsInCounty(county: String!): [EOC!]!
   }
@@ -112,9 +108,6 @@ export const eocTypeDefs = gql`
       bbox: [[[Float!]]]
     ): EOC!
 
-    updateEOCLevel(
-      id: ID!
-      level: OperationalLevel!
-    ): EOC!
+    updateEOCLevel(id: ID!, level: OperationalLevel!): EOC!
   }
 `;

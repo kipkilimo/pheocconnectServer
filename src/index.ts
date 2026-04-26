@@ -1,3 +1,4 @@
+// server/src/index.ts
 import os from "os";
 import dotenv from "dotenv";
 dotenv.config();
@@ -9,6 +10,9 @@ import https from "https";
 import fs from "fs";
 import { URL } from "url";
 import { PubSub } from "graphql-subscriptions";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+import depthLimit from "graphql-depth-limit";
 
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
@@ -17,18 +21,60 @@ import { ApolloServerPluginLandingPageGraphQLPlayground } from "@apollo/server-p
 import connectDB from "./database/connection";
 import schema from "./graphql/schema";
 import { authMiddleware, context as authContext } from "./utils/authGenerator";
+import { connectRedis, disconnectRedis } from "./utils/redis";
 
 /* ============================================
- SINGLE WEBSOCKET: ALERT STREAM
+ WEBSOCKET IMPORTS
 ============================================ */
-
-import { alertWSS } from "./sockets/alertSocket";
+import { alertWSS, getWebSocketMetrics, closeWebSocketServer } from "./sockets";
 
 /* ============================================
  OPTIONAL ROUTES
 ============================================ */
 import fileRoutes from "./routes/fileRoutes";
-//import { s3Deleter } from "./utils/awsDeleter";
+
+/* ============================================
+ SECURITY CONFIGURATION
+============================================ */
+
+const isProd = process.env.NODE_ENV === "production";
+const MAX_WS_CONNECTIONS = 100;
+const WS_AUTH_TOKEN =
+  process.env.WS_AUTH_TOKEN || "default-secure-token-change-me";
+
+// Rate limiters
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 500, // 500 requests per 15 minutes
+  message: "Too many requests from this IP, please try again later.",
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    // Use X-Forwarded-For if behind proxy
+    return (
+      (req.headers["x-forwarded-for"] as string) ||
+      req.socket.remoteAddress ||
+      "unknown"
+    );
+  },
+});
+
+const graphqlLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 200, // 200 GraphQL requests per 5 minutes
+  message: "GraphQL request limit exceeded. Slow down!",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // 5 failed attempts
+  skipSuccessfulRequests: true,
+  message: "Too many login attempts, please try again later.",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 /* ============================================
  BOOTSTRAP
@@ -42,58 +88,127 @@ const startServer = async () => {
    DATABASE
   ============================================ */
   await connectDB();
+  await connectRedis(); // Connect to Redis
 
   /* ============================================
-   CORS CONFIG
+   SECURITY MIDDLEWARE
+  ============================================ */
+
+  // Hide server fingerprint
+  app.disable("x-powered-by");
+
+  // Helmet for security headers
+  app.use(
+    helmet({
+      crossOriginEmbedderPolicy: false,
+      contentSecurityPolicy: false, // Disable if using GraphQL playground in dev
+      hsts: isProd
+        ? {
+            maxAge: 31536000,
+            includeSubDomains: true,
+            preload: true,
+          }
+        : false,
+    }),
+  );
+
+  // Apply global rate limiting
+  if (isProd) {
+    app.use(globalLimiter);
+  }
+
+  // Apply stricter rate limiting to login endpoints (if you have them)
+  app.use("/graphql", graphqlLimiter);
+  app.use("/api/login", loginLimiter);
+
+  /* ============================================
+   CORS CONFIG (Hardened)
   ============================================ */
 
   const allowedOrigins = [
     "http://localhost:8040",
     "http://127.0.0.1:8040",
-    "https://nembio.com",
-    "https://www.nembio.com",
+    "https://pheocconnect.org",
+    "https://www.pheocconnect.org",
     process.env.CORS_ORIGIN,
   ].filter(Boolean);
+
+  // Add production origins from env
+  if (process.env.PROD_CORS_ORIGINS) {
+    allowedOrigins.push(...process.env.PROD_CORS_ORIGINS.split(","));
+  }
 
   app.use(
     cors({
       origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps, curl)
         if (!origin) return callback(null, true);
 
+        // In production, strict check
+        if (isProd) {
+          if (allowedOrigins.includes(origin)) {
+            return callback(null, true);
+          }
+          return callback(new Error(`CORS blocked: ${origin} not allowed`));
+        }
+
+        // In development, be more permissive but still restrict
         if (
-          allowedOrigins.includes(origin) ||
-          process.env.NODE_ENV !== "production"
+          origin.includes("localhost") ||
+          origin.includes(String(process.env.CLIENT_SIDE_URL)) ||
+          origin.includes("127.0.0.1")
         ) {
           return callback(null, true);
         }
 
-        return callback(new Error("CORS blocked"));
+        return callback(new Error("CORS blocked in development mode"));
       },
       credentials: true,
       methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
       allowedHeaders: ["Content-Type", "Authorization"],
+      exposedHeaders: ["X-RateLimit-Limit", "X-RateLimit-Remaining"],
       maxAge: 86400,
     }),
   );
 
-  app.use(express.json({ limit: "50mb" }));
-  app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+  // Reduced payload size for security
+  app.use(express.json({ limit: "5mb" }));
+  app.use(express.urlencoded({ extended: true, limit: "5mb" }));
 
   /* ============================================
    AUTH MIDDLEWARE (Express)
   ============================================ */
-  // This attaches user to req.user for Express routes
   app.use(authMiddleware);
 
   /* ============================================
-   APOLLO SERVER
+   HEALTH CHECK ENDPOINT FOR WEBSOCKET METRICS
+  ============================================ */
+  app.get("/ws/metrics", (req, res) => {
+    // Only expose metrics in production if authenticated
+    if (isProd) {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || authHeader !== `Bearer ${process.env.METRICS_TOKEN}`) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+    }
+    res.json(getWebSocketMetrics());
+  });
+
+  /* ============================================
+   APOLLO SERVER (Hardened - FIXED)
   ============================================ */
 
   const apolloServer = new ApolloServer({
     schema,
     csrfPrevention: true,
-    introspection: true,
-    plugins: [ApolloServerPluginLandingPageGraphQLPlayground()],
+    introspection: !isProd, // Disable introspection in production
+    validationRules: [
+      depthLimit(5, { ignore: [/_trusted$/, "id"] }), // Prevent deep query attacks
+    ],
+    cache: "bounded", // Prevent cache exhaustion
+    // FIXED: Changed from 'persistQueries' to 'persistedQueries'
+    persistedQueries: false, // Disable persisted queries if not needed
+    plugins: isProd ? [] : [ApolloServerPluginLandingPageGraphQLPlayground()],
   });
 
   await apolloServer.start();
@@ -101,20 +216,22 @@ const startServer = async () => {
   app.use(
     "/graphql",
     expressMiddleware(apolloServer, {
-      context: async ({ req }) => ({
-        req,
-        pubsub,
-        // Get user from either the authMiddleware or directly from token
-        user: (req as any).user || (await authContext({ req })).user,
-      }),
+      context: async ({ req }) => {
+        // Add request context with timeout
+        const user = (req as any).user || (await authContext({ req })).user;
+        return {
+          req,
+          pubsub,
+          user,
+          startTime: Date.now(),
+        };
+      },
     }),
   );
 
   /* ============================================
    REST ENDPOINTS
   ============================================ */
-
-  // app.post("/delete-files", s3Deleter);
   app.use("/api", fileRoutes);
 
   /* ============================================
@@ -122,59 +239,127 @@ const startServer = async () => {
   ============================================ */
 
   let server: http.Server | https.Server;
+  const serverTimeout = 10000; // 10 seconds to prevent Slowloris
 
-  if (process.env.NODE_ENV === "production") {
+  if (isProd) {
     server = https.createServer(
       {
-        key: fs.readFileSync("/etc/letsencrypt/live/nembio.com/privkey.pem"),
-        cert: fs.readFileSync("/etc/letsencrypt/live/nembio.com/fullchain.pem"),
+        key: fs.readFileSync(
+          "/etc/letsencrypt/live/pheocconnect.org/privkey.pem",
+        ),
+        cert: fs.readFileSync(
+          "/etc/letsencrypt/live/pheocconnect.org/fullchain.pem",
+        ),
+        // Additional SSL security
+        minVersion: "TLSv1.2",
+        ciphers: [
+          "ECDHE-ECDSA-AES128-GCM-SHA256",
+          "ECDHE-RSA-AES128-GCM-SHA256",
+          "ECDHE-ECDSA-AES256-GCM-SHA384",
+          "ECDHE-RSA-AES256-GCM-SHA384",
+        ].join(":"),
       },
       app,
     );
 
-    console.log("🔐 HTTPS enabled");
+    console.log("🔐 HTTPS enabled with secure ciphers");
   } else {
     server = http.createServer(app);
-    console.log("🧪 HTTP enabled");
+    console.log("🧪 HTTP enabled (development)");
   }
 
+  server.setTimeout(serverTimeout);
+  server.keepAliveTimeout = 5000; // Reduce keep-alive timeout
+  server.headersTimeout = 6000; // Slightly higher than keepAliveTimeout
+
   /* ============================================
-   ALERT WEBSOCKET ONLY (SINGLE CHANNEL)
+   WEBSOCKET UPGRADE HANDLER (Hardened)
   ============================================ */
 
   server.on("upgrade", (req, socket, head) => {
+    // Validate request
     if (!req.url || !req.headers.host) {
+      console.warn("⚠️ WebSocket upgrade denied: missing URL or host");
       socket.destroy();
       return;
     }
 
-    const pathname = new URL(req.url, `http://${req.headers.host}`).pathname;
-
-    if (pathname !== "/alerts") {
+    // Check connection limits
+    if (alertWSS.clients.size >= MAX_WS_CONNECTIONS) {
+      console.warn(
+        `⚠️ WebSocket upgrade denied: max connections (${MAX_WS_CONNECTIONS}) reached`,
+      );
       socket.destroy();
       return;
     }
 
-    alertWSS.handleUpgrade(req, socket, head, (ws: any) => {
-      alertWSS.emit("connection", ws, req);
-    });
+    // Authenticate WebSocket (required for production)
+    if (isProd) {
+      const authToken = req.headers["sec-websocket-protocol"];
+
+      if (!authToken || authToken !== WS_AUTH_TOKEN) {
+        console.warn(
+          "⚠️ WebSocket upgrade denied: invalid or missing auth token",
+        );
+        socket.destroy();
+        return;
+      }
+    }
+
+    try {
+      const pathname = new URL(req.url, `http://${req.headers.host}`).pathname;
+
+      // Handle WebSocket upgrades for /alerts endpoint
+      if (pathname === "/alerts") {
+        // Add rate limiting per IP for WebSocket connections
+        const clientIP =
+          (req.headers["x-forwarded-for"] as string) ||
+          req.socket.remoteAddress;
+
+        alertWSS.handleUpgrade(req, socket, head, (ws: any) => {
+          // Attach metadata to connection
+          (ws as any).clientIP = clientIP;
+          (ws as any).connectedAt = Date.now();
+          alertWSS.emit("connection", ws, req);
+        });
+      } else {
+        console.warn(`⚠️ WebSocket upgrade denied: invalid path ${pathname}`);
+        socket.destroy();
+      }
+    } catch (err) {
+      console.error("❌ WebSocket upgrade error:", err);
+      socket.destroy();
+    }
   });
 
   /* ============================================
-   START
-  ============================================ */
-
-  /* ============================================
-   START
+   START SERVER
   ============================================ */
 
   const PORT = Number(process.env.PORT) || 4040;
 
   server.listen(PORT, "0.0.0.0", () => {
-    console.log(`\n🚀 PHEOC Server running`);
+    console.log(
+      `\n🚀 PHEOC Server running (${isProd ? "PRODUCTION" : "DEVELOPMENT"} mode)`,
+    );
     console.log(`📡 GraphQL: /graphql`);
     console.log(`🚨 Alerts WS: /alerts`);
+    console.log(`📊 WS Metrics: /ws/metrics`);
     console.log(`🌍 Port: ${PORT}`);
+
+    if (isProd) {
+      console.log(`\n🔒 Security features enabled:`);
+      console.log(`   • Rate limiting (global: 500/15min, GraphQL: 200/5min)`);
+      console.log(`   • Query depth limit: 5 levels`);
+      console.log(`   • Introspection: disabled`);
+      console.log(`   • Payload size limit: 5MB`);
+      console.log(`   • WebSocket auth required`);
+      console.log(`   • WebSocket max connections: ${MAX_WS_CONNECTIONS}`);
+      console.log(`   • Request timeout: ${serverTimeout}ms`);
+      console.log(`   • Helmet security headers enabled`);
+      console.log(`   • CORS strict mode`);
+    }
+
     console.log(`\n📝 Active endpoints (clickable):\n`);
 
     // Get all network interfaces
@@ -183,6 +368,8 @@ const startServer = async () => {
     // Display localhost
     console.log(`   🏠 http://localhost:${PORT}/graphql`);
     console.log(`   🏠 http://127.0.0.1:${PORT}/graphql`);
+    console.log(`   🏠 ws://localhost:${PORT}/alerts`);
+    console.log(`   🏠 ws://127.0.0.1:${PORT}/alerts`);
 
     // Display all network IPs
     Object.keys(networkInterfaces).forEach((interfaceName) => {
@@ -190,28 +377,8 @@ const startServer = async () => {
       if (interfaces) {
         interfaces.forEach((netInterface) => {
           if (netInterface.family === "IPv4" && !netInterface.internal) {
-            console.log(
-              `   🌐 ${interfaceName}: http://${netInterface.address}:${PORT}/graphql`,
-            );
-          }
-        });
-      }
-    });
-
-    console.log(`\n🔌 WebSocket endpoints:\n`);
-
-    // Display WebSocket endpoints
-    console.log(`   🏠 ws://localhost:${PORT}/alerts`);
-    console.log(`   🏠 ws://127.0.0.1:${PORT}/alerts`);
-
-    Object.keys(networkInterfaces).forEach((interfaceName) => {
-      const interfaces = networkInterfaces[interfaceName];
-      if (interfaces) {
-        interfaces.forEach((netInterface) => {
-          if (netInterface.family === "IPv4" && !netInterface.internal) {
-            console.log(
-              `   📡 ${interfaceName}: ws://${netInterface.address}:${PORT}/alerts`,
-            );
+            console.log(`   🌐 http://${netInterface.address}:${PORT}/graphql`);
+            console.log(`   📡 ws://${netInterface.address}:${PORT}/alerts`);
           }
         });
       }
@@ -219,9 +386,42 @@ const startServer = async () => {
 
     console.log(`\n✨ Server ready! Press Ctrl+C to stop\n`);
   });
+
+  /* ============================================
+   GRACEFUL SHUTDOWN
+  ============================================ */
+
+  const gracefulShutdown = async (signal: string) => {
+    console.log(`\n⚠️ ${signal} received, starting graceful shutdown...`);
+
+    // Stop accepting new connections
+    server.close(async () => {
+      console.log("✅ HTTP server closed");
+
+      // Close WebSocket connections
+      await closeWebSocketServer();
+
+      // Disconnect Redis
+      await disconnectRedis();
+
+      console.log("✨ Graceful shutdown completed");
+      process.exit(0);
+    });
+
+    // Force shutdown after 30 seconds
+    setTimeout(() => {
+      console.error("💥 Force shutdown timeout reached");
+      process.exit(1);
+    }, 30000);
+  };
+
+  process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+  process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 };
-// Call startServer outside the function definition
-startServer().catch((err) => {
-  console.error("💥 Server failed:", err);
+
+// Start the server with error handling
+startServer().catch(async (err) => {
+  console.error("💥 Server failed to start:", err);
+  await disconnectRedis();
   process.exit(1);
 });

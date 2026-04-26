@@ -1,4 +1,4 @@
-export { default as Case } from "./Case";
+export { default as Case } from "./Surveillance";
 export { default as Eoc } from "./Eoc";
 export { default as Incident } from "./Incident";
 export { default as Lab } from "./Lab";

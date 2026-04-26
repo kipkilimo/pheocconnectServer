@@ -47,10 +47,17 @@ export const eocResolver: IResolvers = {
      ALL EOCS
     ============================================ */
 
-    async eocs(_, __, context) {
-      if (!context.user) throw new Error("Not authenticated");
+    // In your EOC resolver
+    async eocs(_, { limit, offset, county, alertLevel }) {
+      const filter: any = {};
+      if (county) filter.county = county;
+      if (alertLevel) filter.alertLevel = alertLevel;
 
-      const eocs = await EOCModel.find().lean();
+      let query = EOCModel.find(filter);
+      if (limit) query = query.limit(limit);
+      if (offset) query = query.skip(offset);
+
+      const eocs = await query.lean();
       return eocs.map(toId);
     },
 

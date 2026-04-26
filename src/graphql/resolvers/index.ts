@@ -3,7 +3,7 @@ import { mergeResolvers } from "@graphql-tools/merge";
 import userResolver from "./user.resolver";
 import organizationResolver from "./organization.resolver";
 import eocResolver from "./eoc.resolver";
-import surveillanceResolver from "./surveillance.resolver";
+import { surveillanceResolvers } from "./surveillance.resolver";
 import labResolver from "./lab.resolver";
 import incidentResolver from "./incident.resolver";
 import sitrepResolver from "./sitrep.resolver";
@@ -15,7 +15,7 @@ export const resolvers = mergeResolvers([
   userResolver,
   organizationResolver,
   eocResolver,
-  surveillanceResolver,
+  surveillanceResolvers,
   labResolver,
   incidentResolver,
   sitrepResolver,

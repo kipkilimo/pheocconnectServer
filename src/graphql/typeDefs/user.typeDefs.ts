@@ -1,17 +1,20 @@
 import { gql } from "graphql-tag";
 
 export const userTypeDefs = gql`
+  # ---------- TYPES ----------
+
   type User {
     id: ID!
     name: String!
     email: String!
     role: Role!
-    organizationId: ID
-    eocId: ID
+    organizationId: ID # Made optional (removed !)
+    eocId: [ID!] # Made optional (removed ! from array, but kept ! for items)
     active: Boolean!
     emailVerified: Boolean!
     lastLoginAt: DateTime
     createdAt: DateTime!
+    updatedAt: DateTime
   }
 
   type AuthPayload {
@@ -26,6 +29,7 @@ export const userTypeDefs = gql`
     message: String!
     expiresAt: DateTime!
     remainingAttempts: Int
+    lockedUntil: DateTime
   }
 
   # ---------- PUBLIC ----------
@@ -45,12 +49,12 @@ export const userTypeDefs = gql`
   }
 
   type PublicDashboard {
-    stats: DashboardStats!
+    stats: PublicDashboardStats!
     recentActivities: [PublicActivity!]!
     announcements: [Announcement!]!
   }
 
-  type DashboardStats {
+  type PublicDashboardStats {
     totalUsers: Int!
     activeSessions: Int!
     systemHealth: String!
@@ -63,8 +67,8 @@ export const userTypeDefs = gql`
     name: String!
     email: String!
     role: Role!
-    organizationId: ID
-    eocId: ID
+    organizationId: ID # Made optional
+    eocId: ID # Changed to single ID or keep as array? See notes below
   }
 
   input RequestOTPInput {
@@ -103,11 +107,11 @@ export const userTypeDefs = gql`
     refreshToken(input: RefreshTokenInput!): AuthPayload!
     logout: Boolean! @auth
 
-    # User mgmt
-    createUser(input: CreateUserInput!): User! @auth(requires: [ADMIN])
+    # User management
+    createUser(input: CreateUserInput!): AuthPayload!
     updateUserRole(userId: ID!, role: Role!): User! @auth(requires: [ADMIN])
-    deactivateUser(userId: ID!): Boolean! @auth(requires: [ADMIN, EOC_MANAGER])
-
+    deactivateUser(userId: ID!): User! @auth(requires: [ADMIN, EOC_MANAGER])
+    reactivateUser(userId: ID!): User! @auth(requires: [ADMIN, EOC_MANAGER])
     # Sessions
     revokeAllSessions: Boolean! @auth
     revokeDeviceSession(sessionId: ID!): Boolean! @auth
