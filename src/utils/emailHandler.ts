@@ -1,87 +1,87 @@
 // utils/emailHandler.ts
-import nodemailer from "nodemailer";
 
 export interface EmailAttachment {
   filename: string;
-  path?: string; // File system path
-  content?: Buffer | string; // In-memory content (Buffer for binary, string for base64)
+  content: Buffer | string; // make this required if you're sending
   contentType?: string;
-  encoding?: string;
 }
 
 /**
- * Sends an email using Brevo SMTP (Nodemailer)
- * @param to Recipient email(s)
- * @param subject Email subject
- * @param htmlContent HTML content of the email
- * @param attachments Optional attachments (supports both path and content)
+ * Sends an email using Brevo HTTP API directly
  */
 export const sendEmail = async (
   to: string | string[],
   subject: string,
   htmlContent: string,
-  attachments: EmailAttachment[] = [],
+  attachments?: EmailAttachment[],
 ): Promise<boolean> => {
   try {
-    // Create SMTP transporter
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT),
-      secure: false, // true for 465, false for 587 (STARTTLS)
-      auth: {
-        user: process.env.SMTP_USER, // Brevo relay user
-        pass: process.env.SMTP_PASS, // Brevo SMTP key
-      },
-      logger: false, // for detailed connection logs
-      debug: true,
-    });
-
-    // Email headers
-    const mailOptions: any = {
-      from: `"${process.env.APP_NAME || "Event Wave"}" <${process.env.MAIL_FROM}>`,
-      replyTo: process.env.MAIL_FROM,
-      to,
-      subject,
-      html: htmlContent,
-    };
-
-    // Process attachments to handle both path and content
-    if (attachments.length > 0) {
-      mailOptions.attachments = attachments
-        .map((attachment) => {
-          // If path is provided, use it (existing behavior)
-          if (attachment.path) {
-            return {
-              filename: attachment.filename,
-              path: attachment.path,
-              contentType: attachment.contentType,
-            };
-          }
-          // If content is provided (Buffer or string), use it
-          else if (attachment.content) {
-            return {
-              filename: attachment.filename,
-              content: attachment.content,
-              contentType: attachment.contentType || "application/octet-stream",
-              encoding: attachment.encoding,
-            };
-          }
-          // Invalid attachment - missing both path and content
-          console.warn(
-            "Invalid attachment missing both path and content:",
-            attachment.filename,
-          );
-          return null;
-        })
-        .filter(Boolean); // Remove null entries
+    const apiKey = process.env.BREVO_API_KEY;
+    if (!apiKey) {
+      console.error("❌ BREVO_API_KEY is not set");
+      return false;
     }
 
-    // Send message
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`✅ Email accepted by Brevo: ${info.messageId}`);
+    const recipients = Array.isArray(to) ? to : [to];
+
+    const payload: any = {
+      sender: {
+        email: process.env.BREVO_FROM_EMAIL || "info@pheocconnect.org",
+        name: process.env.BREVO_FROM_NAME || "PHEOCConnect",
+      },
+      to: recipients.map((email) => ({
+        email,
+        name: email.split("@")[0],
+      })),
+      subject,
+      htmlContent,
+      textContent: htmlContent.replace(/<[^>]*>/g, "").slice(0, 500),
+    };
+
+    // ✅ Attachments support (FIX)
+    if (attachments?.length) {
+      payload.attachment = attachments.map((file) => ({
+        name: file.filename,
+        content:
+          typeof file.content === "string"
+            ? Buffer.from(file.content).toString("base64")
+            : file.content.toString("base64"),
+        type: file.contentType,
+      }));
+    }
+
+    // ❌ Removed reply-to (as requested: autos only)
+
+    if (process.env.BREVO_CC_EMAIL) {
+      payload.cc = [{ email: process.env.BREVO_CC_EMAIL }];
+    }
+
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "api-key": apiKey,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.error("❌ Brevo API error:", error);
+      return false;
+    }
+
+    const data = await response.json();
+    console.log(`✅ Email sent to ${recipients.length} recipient(s)`);
+
+    if (process.env.NODE_ENV !== "production") {
+      console.log(`   Message ID: ${data.messageId}`);
+    }
+
     return true;
   } catch (error: any) {
-    console.error("❌ Email sending failed:", error.message || error);
+    console.error("❌ Email sending failed:", error.message);
     return false;
   }
 };

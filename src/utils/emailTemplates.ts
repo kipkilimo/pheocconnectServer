@@ -1,8 +1,8 @@
 // src/utils/email.ts
-import { emailFooter } from "../../utils/emailFooter";
-import { emailHeader } from "../../utils/emailHeader";
-import { sendEmail as sendEmailHandler } from "../../utils/emailHandler";
-import { redisClient } from "../../utils/redis";
+import { emailFooter } from "./emailFooter";
+import { emailHeader } from "./emailHeader";
+import { sendEmail as sendEmailHandler } from "./emailHandler";
+import { redisClient } from "./redis";
 
 // Theme colors
 const theme = {

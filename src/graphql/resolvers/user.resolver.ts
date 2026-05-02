@@ -8,7 +8,7 @@ import {
   createAccountDeactivationEmail,
   createAccountReactivationEmail,
   createRoleChangeEmail,
-} from "../helpers/user";
+} from "../../utils/emailTemplates";
 import {
   generateTokens,
   verifyAccessToken,
@@ -300,7 +300,7 @@ export const userResolver: IResolvers = {
       const user = await User.create({
         name,
         email,
-        role: role || "VIEWER",
+        role: role || "PUBLIC",
         phone,
         organizationId,
         active: true,

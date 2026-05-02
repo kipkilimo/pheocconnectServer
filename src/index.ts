@@ -37,7 +37,7 @@ import fileRoutes from "./routes/fileRoutes";
  SECURITY CONFIGURATION
 ============================================ */
 
-const isProd = process.env.NODE_ENV === "production";
+const isProduction = process.env.NODE_ENV === "production";
 const MAX_WS_CONNECTIONS = 100;
 const WS_AUTH_TOKEN =
   process.env.WS_AUTH_TOKEN || "default-secure-token-change-me";
@@ -102,7 +102,7 @@ const startServer = async () => {
     helmet({
       crossOriginEmbedderPolicy: false,
       contentSecurityPolicy: false, // Disable if using GraphQL playground in dev
-      hsts: isProd
+      hsts: isProduction
         ? {
             maxAge: 31536000,
             includeSubDomains: true,
@@ -113,7 +113,7 @@ const startServer = async () => {
   );
 
   // Apply global rate limiting
-  if (isProd) {
+  if (isProduction) {
     app.use(globalLimiter);
   }
 
@@ -124,50 +124,45 @@ const startServer = async () => {
   /* ============================================
    CORS CONFIG (Hardened)
   ============================================ */
-
   const allowedOrigins = [
     "http://localhost:8040",
     "http://127.0.0.1:8040",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://192.168.43.218:8040",
+    "http://192.168.43.218:5173",
     "https://pheocconnect.org",
     "https://www.pheocconnect.org",
     process.env.CORS_ORIGIN,
   ].filter(Boolean);
 
-  // Add production origins from env
-  if (process.env.PROD_CORS_ORIGINS) {
-    allowedOrigins.push(...process.env.PROD_CORS_ORIGINS.split(","));
-  }
-
   app.use(
     cors({
       origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps, curl)
         if (!origin) return callback(null, true);
 
-        // In production, strict check
-        if (isProd) {
+        // ✅ Production: strict
+        if (isProduction) {
           if (allowedOrigins.includes(origin)) {
             return callback(null, true);
           }
-          return callback(new Error(`CORS blocked: ${origin} not allowed`));
+          return callback(new Error(`CORS blocked: ${origin}`));
         }
 
-        // In development, be more permissive but still restrict
-        if (
+        // ✅ Development: allow localhost + LAN
+        const isLocal =
           origin.includes("localhost") ||
-          origin.includes(String(process.env.CLIENT_SIDE_URL)) ||
-          origin.includes("127.0.0.1")
-        ) {
+          origin.includes("127.0.0.1") ||
+          origin.startsWith("http://192.168.");
+
+        if (isLocal) {
           return callback(null, true);
         }
 
-        return callback(new Error("CORS blocked in development mode"));
+        console.warn("⚠️ Dev CORS blocked:", origin);
+        return callback(null, false); // DON'T throw error in dev
       },
       credentials: true,
-      methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-      allowedHeaders: ["Content-Type", "Authorization"],
-      exposedHeaders: ["X-RateLimit-Limit", "X-RateLimit-Remaining"],
-      maxAge: 86400,
     }),
   );
 
@@ -185,7 +180,7 @@ const startServer = async () => {
   ============================================ */
   app.get("/ws/metrics", (req, res) => {
     // Only expose metrics in production if authenticated
-    if (isProd) {
+    if (isProduction) {
       const authHeader = req.headers.authorization;
       if (!authHeader || authHeader !== `Bearer ${process.env.METRICS_TOKEN}`) {
         return res.status(401).json({ error: "Unauthorized" });
@@ -198,17 +193,16 @@ const startServer = async () => {
    APOLLO SERVER (Hardened - FIXED)
   ============================================ */
 
+  // Then in your ApolloServer configuration:
   const apolloServer = new ApolloServer({
     schema,
+    introspection: !isProduction, // Disable introspection in production
     csrfPrevention: true,
-    introspection: !isProd, // Disable introspection in production
-    validationRules: [
-      depthLimit(5, { ignore: [/_trusted$/, "id"] }), // Prevent deep query attacks
-    ],
-    cache: "bounded", // Prevent cache exhaustion
-    // FIXED: Changed from 'persistQueries' to 'persistedQueries'
-    persistedQueries: false, // Disable persisted queries if not needed
-    plugins: isProd ? [] : [ApolloServerPluginLandingPageGraphQLPlayground()],
+    cache: "bounded",
+    validationRules: [depthLimit(5)],
+    plugins: isProduction
+      ? [] // Empty array for production - no playground
+      : [ApolloServerPluginLandingPageGraphQLPlayground()], // Playground only in dev
   });
 
   await apolloServer.start();
@@ -241,7 +235,7 @@ const startServer = async () => {
   let server: http.Server | https.Server;
   const serverTimeout = 10000; // 10 seconds to prevent Slowloris
 
-  if (isProd) {
+  if (isProduction) {
     server = https.createServer(
       {
         key: fs.readFileSync(
@@ -294,7 +288,7 @@ const startServer = async () => {
     }
 
     // Authenticate WebSocket (required for production)
-    if (isProd) {
+    if (isProduction) {
       const authToken = req.headers["sec-websocket-protocol"];
 
       if (!authToken || authToken !== WS_AUTH_TOKEN) {
@@ -340,14 +334,14 @@ const startServer = async () => {
 
   server.listen(PORT, "0.0.0.0", () => {
     console.log(
-      `\n🚀 PHEOC Server running (${isProd ? "PRODUCTION" : "DEVELOPMENT"} mode)`,
+      `\n🚀 PHEOC Server running (${isProduction ? "PRODUCTION" : "DEVELOPMENT"} mode)`,
     );
     console.log(`📡 GraphQL: /graphql`);
     console.log(`🚨 Alerts WS: /alerts`);
     console.log(`📊 WS Metrics: /ws/metrics`);
     console.log(`🌍 Port: ${PORT}`);
 
-    if (isProd) {
+    if (isProduction) {
       console.log(`\n🔒 Security features enabled:`);
       console.log(`   • Rate limiting (global: 500/15min, GraphQL: 200/5min)`);
       console.log(`   • Query depth limit: 5 levels`);
@@ -425,3 +419,6 @@ startServer().catch(async (err) => {
   await disconnectRedis();
   process.exit(1);
 });
+function ApolloServerPluginLandingPageDisabled() {
+  throw new Error("Function not implemented.");
+}

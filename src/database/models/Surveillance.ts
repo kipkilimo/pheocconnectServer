@@ -144,3 +144,13 @@ export const SurveillanceAlertModel =
     "SurveillanceAlert",
     SurveillanceAlertSchema,
   );
+
+// ==================== DEFAULT EXPORT ====================
+// Add this at the very end of Surveillance.ts
+const Surveillance = {
+  DiseaseModel,
+  CaseModel,
+  SurveillanceAlertModel,
+};
+
+export default Surveillance;
